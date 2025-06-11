@@ -8,6 +8,7 @@ import DashboardLayout from './layouts/DashboardLayout.tsx'
 import Booking from './pages/dashboard/Booking.tsx'
 import Cabang from './pages/dashboard/Cabang.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import Unit from './pages/dashboard/Unit.tsx'
 
 async function enableMocking() {
   // Run mock service worker only in development
@@ -36,6 +37,7 @@ enableMocking().then(() => {
               <Route index element={<Dashboard />} />
               <Route path="booking" element={<Booking />} />
               <Route path="cabang" element={<Cabang />} />
+              <Route path="unit" element={<Unit />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -1,6 +1,5 @@
 import type { Cabang } from "@/types/Cabang";
 
-
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const getCabangs = async (): Promise<Cabang[]> => {

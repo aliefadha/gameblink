@@ -1,9 +1,9 @@
-import type { Booking } from "@/types/Booking";
+import type { Unit } from "@/types/Unit";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const getBookings = async (): Promise<Booking[]> => {
-    const fullUrl = `${API_BASE_URL}/bookings`;
+export const getUnits = async (): Promise<Unit[]> => {
+    const fullUrl = `${API_BASE_URL}/units`;
 
     // Add this log to see the exact URL you are requesting
     console.log('Fetching from URL:', fullUrl);

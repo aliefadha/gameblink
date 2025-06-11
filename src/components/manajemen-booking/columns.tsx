@@ -11,7 +11,7 @@ export const columns: ColumnDef<Booking>[] = [
         header: "Nama",
     },
     {
-        accessorKey: "nomorHp",
+        accessorKey: "nomor_hp",
         header: "Nomor HP",
     },
     {
@@ -27,10 +27,10 @@ export const columns: ColumnDef<Booking>[] = [
         header: "Unit",
     },
     {
-        accessorKey: "tanggalMain",
+        accessorKey: "tanggal_main",
         header: "Tanggal Main",
         cell: ({ row }) => {
-            const date = new Date(row.getValue("tanggalMain"))
+            const date = new Date(row.getValue("tanggal_main"))
             const day = date.getDate().toString().padStart(2, '0')
             const month = (date.getMonth() + 1).toString().padStart(2, '0')
             const year = date.getFullYear()
@@ -38,14 +38,14 @@ export const columns: ColumnDef<Booking>[] = [
         }
     },
     {
-        accessorKey: "jamMain",
+        accessorKey: "jam_main",
         header: "Jam Main",
     },
     {
-        accessorKey: "tanggalTransaksi",
+        accessorKey: "tanggal_transaksi",
         header: "Tanggal Transaksi",
         cell: ({ row }) => {
-            const date = new Date(row.getValue("tanggalTransaksi"))
+            const date = new Date(row.getValue("tanggal_transaksi"))
             const day = date.getDate().toString().padStart(2, '0')
             const month = (date.getMonth() + 1).toString().padStart(2, '0')
             const year = date.getFullYear()
@@ -53,14 +53,14 @@ export const columns: ColumnDef<Booking>[] = [
         }
     },
     {
-        accessorKey: "metodePembayaran",
+        accessorKey: "metode_pembayaran",
         header: "Metode Pembayaran",
     },
     {
-        accessorKey: "totalHarga",
+        accessorKey: "total_harga",
         header: "Total Harga",
         cell: ({ row }) => {
-            const amount = parseFloat(row.getValue("totalHarga"))
+            const amount = parseFloat(row.getValue("total_harga"))
             const formatted = new Intl.NumberFormat("id-ID", {
                 style: "currency",
                 currency: "IDR",
@@ -71,11 +71,11 @@ export const columns: ColumnDef<Booking>[] = [
         },
     },
     {
-        accessorKey: "statusPembayaran",
+        accessorKey: "status_pembayaran",
         header: "Status Pembayaran",
         size: 150,
         cell: ({ row }) => {
-            const status = row.getValue("statusPembayaran") as string
+            const status = row.getValue("status_pembayaran") as string
             return (
                 <div>
                     <span className={`flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize ${status === "berhasil"
@@ -93,10 +93,10 @@ export const columns: ColumnDef<Booking>[] = [
         }
     },
     {
-        accessorKey: "statusBooking",
+        accessorKey: "status_booking",
         header: "Status Booking",
         cell: ({ row }) => {
-            const status = row.getValue("statusBooking") as string
+            const status = row.getValue("status_booking") as string
             return (
                 <div>
                     <span className={`flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize ${status === "selesai"
