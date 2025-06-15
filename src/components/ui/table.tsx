@@ -2,15 +2,26 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+interface TableProps extends React.ComponentProps<"table"> {
+  roundedHeader?: boolean;
+}
+
+function Table({ className, roundedHeader = true, ...props }: TableProps) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto rounded-t-2xl"
+      className={cn(
+        "relative w-full overflow-x-auto",
+        roundedHeader && "rounded-t-2xl"
+      )}
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm rounded-t-2xl ", className)}
+        className={cn(
+          "w-full caption-bottom text-sm",
+          roundedHeader && "rounded-t-2xl",
+          className
+        )}
         {...props}
       />
     </div>

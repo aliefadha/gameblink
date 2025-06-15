@@ -1,15 +1,15 @@
 export interface Booking {
     id: string;
     nama: string;
-    nomorHp: string;
+    nomor_hp: string;
     email: string;
     cabang: string;
     unit: string,
-    tanggalMain: string; // Use ISO string format, e.g., "2025-06-12T10:00:00Z"
-    jamMain: string;
-    tanggalTransaksi: string; // Use ISO string format, e.g., "2025-06-12T10:00:00Z"
-    metodePembayaran: string;
-    totalHarga: number;
-    statusPembayaran: 'berhasil' | 'gagal' | 'pending'
-    statusBooking: 'aktif' | 'dibatalkan' | 'selesai' | '-';
+    tanggal_main: string; // Use ISO string format, e.g., "2025-06-12T10:00:00Z"
+    jam_main: string;
+    tanggal_transaksi: string; // Use ISO string format, e.g., "2025-06-12T10:00:00Z"
+    metode_pembayaran: string;
+    total_harga: number;
+    status_pembayaran: 'berhasil' | 'gagal' | 'pending'
+    status_booking: 'aktif' | 'dibatalkan' | 'selesai' | '-';
 }

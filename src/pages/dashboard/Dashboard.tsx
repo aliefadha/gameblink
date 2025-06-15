@@ -12,14 +12,33 @@ import { Calendar } from "@/components/ui/calendar"
 import { LuCalendarDays } from "react-icons/lu"
 import { useState } from "react"
 import type { DateRange } from "react-day-picker"
+import { useQuery } from "@tanstack/react-query"
+import { getCabangs } from "@/lib/api/cabangs"
+import type { Cabang } from "@/types/Cabang"
 
 function Dashboard() {
+
+    const [cabang, setCabang] = useState<Cabang | null>(null)
+        ;
+    const { data: cabangs, isLoading, error } = useQuery({
+        queryKey: ['cabangs'],
+        queryFn: getCabangs,
+    });
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: new Date(2025, 5, 9),
         to: new Date(2025, 5, 26),
     })
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error</div>;
+    }
+
     return (
-        <div className="p-10 flex flex-col gap-y-4 overflow-y-scroll">
+        <div className="p-4 sm:p-6 md:p-10 flex flex-col gap-y-3 sm:gap-y-4 overflow-y-scroll">
             <div>
                 <h1 className="flex text-xl font-bold gap-x-4 items-center text-[#61368E]">
                     <PiSquaresFourBold size={24} />
@@ -27,6 +46,7 @@ function Dashboard() {
                 </h1>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Card 1: Booking Hari Ini */}
                 <Card className="w-full bg-[#61368E]">
                     <CardHeader>
                         <CardTitle>
@@ -37,12 +57,14 @@ function Dashboard() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl text-white font-bold">
+                        {/* Adjusted: Starts large, grows, then scales down for 4-col layout */}
+                        <h1 className="text-3xl sm:text-4xl lg:text-3xl text-white font-bold">
                             24
                         </h1>
                     </CardContent>
                 </Card>
 
+                {/* Card 2: Tersedia */}
                 <Card className="w-full bg-[#61368E]">
                     <CardHeader>
                         <CardTitle>
@@ -53,12 +75,14 @@ function Dashboard() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <h1 className="text-2xl sm:text-3xl md:text-4xl text-white font-bold">
+                        {/* Adjusted: Starts large, grows, then scales down for 4-col layout */}
+                        <h1 className="text-3xl sm:text-4xl lg:text-3xl text-white font-bold">
                             35
                         </h1>
                     </CardContent>
                 </Card>
 
+                {/* Card 3: Pendapatan Hari Ini */}
                 <Card className="w-full bg-[#61368E]">
                     <CardHeader>
                         <CardTitle>
@@ -69,12 +93,14 @@ function Dashboard() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <h1 className="text-md sm:text-2xl md:text-3xl text-white font-bold">
+                        {/* Adjusted: Corrected 'text-md', added responsive scaling */}
+                        <h1 className="text-2xl sm:text-3xl lg:text-2xl text-white font-bold">
                             Rp452.000
                         </h1>
                     </CardContent>
                 </Card>
 
+                {/* Card 4: Cabang Paling Laris */}
                 <Card className="w-full bg-[#61368E]">
                     <CardHeader>
                         <CardTitle>
@@ -85,7 +111,8 @@ function Dashboard() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <h1 className="text-md sm:text-2xl md:text-3xl text-white font-bold">
+                        {/* Adjusted: Corrected 'text-md', added responsive scaling */}
+                        <h1 className="text-2xl sm:text-3xl lg:text-2xl text-white font-bold">
                             Tarandam
                         </h1>
                     </CardContent>
@@ -94,18 +121,18 @@ function Dashboard() {
             <Card className="w-full">
                 <CardHeader>
                     <CardTitle>
-                        <div className="flex flex-col md:flex-row gap-y-2 justify-between w-full">
+                        <div className="flex flex-col lg:flex-row gap-y-2 justify-between w-full">
                             <h1 className="text-[#61368E] font-bold text-base md:text-xl">
                                 Statistik Jumlah Booking
                             </h1>
-                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-x-2 justify-end w-full sm:w-1/2">
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-x-2 justify-end w-full lg:w-1/2">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild className="w-full sm:w-1/2">
                                         <Button variant="purple" className="w-full">
                                             <div className="flex items-center justify-between w-full">
                                                 <h1 className="flex items-center gap-x-2">
                                                     <BiHomeAlt size={16} />
-                                                    <span className="font-semibold">Cabang</span>
+                                                    <span className="font-semibold">{cabang?.nama_cabang || "Cabang"}</span>
                                                 </h1>
                                                 <MdKeyboardArrowDown size={24} />
                                             </div>
@@ -114,9 +141,11 @@ function Dashboard() {
                                     <DropdownMenuContent className="w-[calc(100vw-4rem)] sm:w-96" align="center">
                                         <DropdownMenuLabel>Cabang</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem>
-                                            Cabang 1
-                                        </DropdownMenuItem>
+                                        {cabangs?.map((cabang) => (
+                                            <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
+                                                {cabang.nama_cabang}
+                                            </DropdownMenuItem>
+                                        ))}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 <DropdownMenu>

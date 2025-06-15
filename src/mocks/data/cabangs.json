@@ -4,48 +4,48 @@
     "nama_cabang": "Tarandam",
     "alamat_cabang": "Jl. Tarandam",
     "jumlah_unit": 14,
-    "status": "aktif"
+    "status": "Aktif"
   },
   {
     "id": 2,
     "nama_cabang": "Gor Agus Salim",
     "alamat_cabang": "Jl. Gor Agus Salim",
     "jumlah_unit": 7,
-    "status": "aktif"
+    "status": "Aktif"
   },
   {
     "id": 3,
     "nama_cabang": "Bukittinggi",
     "alamat_cabang": "Jl. Bukittinggi",
     "jumlah_unit": 10,
-    "status": "aktif"
+    "status": "Aktif"
   },
   {
     "id": 4,
     "nama_cabang": "Payakumbuh",
     "alamat_cabang": "Jl. Payakumbuh",
     "jumlah_unit": 6,
-    "status": "aktif"
+    "status": "Aktif"
   },
   {
     "id": 5,
     "nama_cabang": "Batusangkar",
     "alamat_cabang": "Jl. Batusangkar",
     "jumlah_unit": 8,
-    "status": "aktif"
+    "status": "Aktif"
   },
   {
     "id": 6,
     "nama_cabang": "Solok",
     "alamat_cabang": "Jl. Solok",
     "jumlah_unit": 8,
-    "status": "aktif"
+    "status": "Aktif"
   },
   {
     "id": 7,
     "nama_cabang": "Ulak Karang",
     "alamat_cabang": "Jl. Ulak Karang",
     "jumlah_unit": 10,
-    "status": "nonaktif"
+    "status": "Tidak_Aktif"
   }
 ]

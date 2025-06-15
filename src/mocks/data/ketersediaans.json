@@ -1,0 +1,22 @@
+[
+  {
+    "id_ketersediaan": 1,
+    "nama_cabang": "Tarandam",
+    "nama_unit": "TV 01",
+    "tanggal_mulai_blokir": "2025-06-12T14:00:00Z",
+    "jam_mulai_blokir": "14.00",
+    "tanggal_selesai_blokir": "2025-06-12T15:00:00Z",
+    "jam_selesai_blokir": "15.00",
+    "keterangan": "Perbaikan Konsol"
+  },
+  {
+    "id_ketersediaan": 2,
+    "nama_cabang": "Tarandam",
+    "nama_unit": "TV 02",
+    "tanggal_mulai_blokir": "2025-06-12T14:00:00Z",
+    "jam_mulai_blokir": "14.00",
+    "tanggal_selesai_blokir": "2025-06-12T15:00:00Z",
+    "jam_selesai_blokir": "15.00",
+    "keterangan": "Perbaikan Konsol"
+  }
+]

@@ -9,6 +9,9 @@ import Booking from './pages/dashboard/Booking.tsx'
 import Cabang from './pages/dashboard/Cabang.tsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import Unit from './pages/dashboard/Unit.tsx'
+import Ketersediaan from './pages/dashboard/Ketersediaan.tsx'
+import { Toaster } from 'sonner'
+import DaftarBooking from './pages/dashboard/DaftarBooking.tsx'
 
 async function enableMocking() {
   // Run mock service worker only in development
@@ -30,6 +33,7 @@ enableMocking().then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
+        <Toaster />
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<App />} />
@@ -38,6 +42,8 @@ enableMocking().then(() => {
               <Route path="booking" element={<Booking />} />
               <Route path="cabang" element={<Cabang />} />
               <Route path="unit" element={<Unit />} />
+              <Route path="ketersediaan" element={<Ketersediaan />} />
+              <Route path="daftar-booking" element={<DaftarBooking />} />
             </Route>
           </Routes>
         </BrowserRouter>

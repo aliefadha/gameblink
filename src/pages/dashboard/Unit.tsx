@@ -11,8 +11,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { DataTable } from "@/components/manajemen-unit/data-table";
 import { useQuery } from "@tanstack/react-query";
-import { getUnits } from "@/api/units";
+import { getUnits } from "@/lib/api/units";
 import { columns } from "@/components/manajemen-unit/columns";
+import { getCabangs } from "@/lib/api/cabangs";
+import { useState } from "react";
+import type { Cabang } from "@/types/Cabang";
 
 const FormSchema = z.object({
     nama_unit: z.string().min(2, {
@@ -28,9 +31,16 @@ const FormSchema = z.object({
 
 function Unit() {
 
+    const [cabang, setCabang] = useState<Cabang | null>(null);
+
     const { data: units, isLoading, error } = useQuery({
         queryKey: ['units'],
         queryFn: getUnits,
+    });
+
+    const { data: cabangs, isLoading: isLoadingCabang, error: errorCabang } = useQuery({
+        queryKey: ['cabangs'],
+        queryFn: getCabangs,
     });
 
     const form = useForm<z.infer<typeof FormSchema>>({
@@ -42,12 +52,12 @@ function Unit() {
         },
     })
 
-    if (isLoading) {
+    if (isLoading || isLoadingCabang) {
         return <div>Loading units...</div>;
     }
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
+    if (error || errorCabang) {
+        return <div>Error</div>;
     }
 
     function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -56,7 +66,7 @@ function Unit() {
 
     return (
         <div className="p-10 flex flex-col gap-y-4 ">
-            <div className="flex items-center gap-x-8">
+            <div className="flex flex-col md:flex-row gap-y-4 justify-between">
                 <div>
                     <h1 className="flex text-xl font-bold gap-x-4 items-center text-[#61368E]">
                         <BiHomeAlt size={24} />
@@ -64,32 +74,34 @@ function Unit() {
                     </h1>
                 </div>
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild className="max-w-xs">
+                    <DropdownMenuTrigger asChild className="w-full max-w-full md:max-w-3xs lg:max-w-xs">
                         <Button variant="purple" className="w-full">
                             <div className="flex items-center justify-between w-full">
                                 <h1 className="flex items-center gap-x-2">
                                     <BiHomeAlt size={16} />
-                                    <span className="font-semibold">Cabang</span>
+                                    <span className="font-semibold">{cabang?.nama_cabang || "Pilih Cabang"}</span>
                                 </h1>
                                 <MdKeyboardArrowDown size={24} />
                             </div>
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[calc(100vw-4rem)] sm:w-96" align="center">
+                    <DropdownMenuContent className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-20rem)] md:w-96" align="center">
                         <DropdownMenuLabel>Cabang</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>
-                            Cabang 1
-                        </DropdownMenuItem>
+                        {cabangs?.map((cabang) => (
+                            <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
+                                {cabang.nama_cabang}
+                            </DropdownMenuItem>
+                        ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
             <Card>
-                <CardHeader>
+                <CardHeader className="gap-y-4">
                     <CardTitle>
-                        <div className="flex flex-col md:flex-row items-center gap-y-2 justify-between w-full">
+                        <div className="flex  items-center gap-y-2 justify-between w-full ">
                             <h1 className="text-[#61368E] font-bold text-base md:text-xl">
-                                Tarandam
+                                {cabang?.nama_cabang || "Pilih Cabang"}
                             </h1>
                             <Dialog>
                                 <DialogTrigger asChild>
@@ -176,8 +188,10 @@ function Unit() {
                             </Dialog>
                         </div>
                     </CardTitle>
-                    <DataTable columns={columns} data={units || []} />
                 </CardHeader>
+                <div className="px-0">
+                    <DataTable columns={columns} data={units || []} />
+                </div>
             </Card>
         </div>
     )
