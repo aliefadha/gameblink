@@ -1,17 +1,17 @@
 
 import { useAuth } from '@/hooks/use-auth';
-import { Link, Outlet } from 'react-router';
+import { Navigate, Outlet } from 'react-router';
 
 export function ProtectedRoute() {
     const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
-        return <div>Loading...</div>; // Or a spinner component
+        return <div>Loading session...</div>;
     }
 
     if (!isAuthenticated) {
-        return <Link to="/login" replace />;
+        return <Navigate to="/login" replace />;
     }
 
-    return <Outlet />; // Renders the child route element
+    return <Outlet />;
 }

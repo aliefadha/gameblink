@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 import { AuthProvider } from './providers/AuthProviders.tsx';
+import { BrowserRouter } from 'react-router';
 
 // This mocking logic remains unchanged
 async function enableMocking() {
@@ -22,12 +23,14 @@ enableMocking().then(() => {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       {/* 1. Global Providers */}
-      <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          {/* 2. Render the Main App Component */}
-          <App />
-        </QueryClientProvider>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            {/* 2. Render the Main App Component */}
+            <App />
+          </QueryClientProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </StrictMode>
   );
 });

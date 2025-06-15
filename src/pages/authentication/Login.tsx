@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -18,7 +18,7 @@ const loginSchema = z.object({
 function Login() {
 
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, isAuthenticated, isLoading } = useAuth();
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -34,6 +34,14 @@ function Login() {
             toast.error(String(error));
         }
     };
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (isAuthenticated) {
+        return <Navigate to="/dashboard" replace />;
+    }
 
     return (
         <div className="flex justify-center items-center min-h-screen bg-[url('/images/bg-login.png')] bg-cover">
