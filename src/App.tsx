@@ -1,9 +1,14 @@
+import { BrowserRouter } from 'react-router';
+import { AppRoutes } from './routes';
+import { Toaster } from 'sonner';
+
 function App() {
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <h1 className='text-4xl underline font-bold'>Kamingsun!</h1>
-    </div>
-  )
+    <BrowserRouter>
+      <Toaster richColors />
+      <AppRoutes />
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;

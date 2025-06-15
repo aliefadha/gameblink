@@ -105,7 +105,7 @@ export function DashboardSidebar() {
         <Sidebar className="bg-gradient-to-b from-[#2B0F4A] to-[#3C205D]">
             <SidebarHeader>
                 <Link to="/dashboard">
-                    <img src="/logo.svg" alt="logo" className="mx-auto w-[150px]" />
+                    <img src="/images/logo.svg" alt="logo" className="mx-auto w-[150px]" />
                 </Link>
             </SidebarHeader>
             <SidebarContent>

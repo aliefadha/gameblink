@@ -14,6 +14,7 @@ import {
     SidebarProvider,
     SidebarTrigger
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/hooks/use-auth";
 
 const menuItems = [
     { to: "/dashboard", icon: PiSquaresFourLight, label: "Dashboard" },
@@ -26,13 +27,14 @@ const menuItems = [
 ];
 
 function DashboardLayout() {
+    const { user, logout } = useAuth();
     return (
         <SidebarProvider>
             <div className="flex max-h-screen flex-1 overflow-hidden">
                 <Sidebar className="bg-gradient-to-b from-[#2B0F4A] to-[#3C205D] h-screen">
                     <SidebarHeader className="py-6">
                         <Link to="/dashboard">
-                            <img src="/logo.svg" alt="logo" className="mx-auto w-[120px]" />
+                            <img src="/images/logo.svg" alt="logo" className="mx-auto w-[120px]" />
                         </Link>
                     </SidebarHeader>
                     <SidebarContent className="flex flex-col gap-y-0.5 text-xs flex-1 py-0">
@@ -48,10 +50,13 @@ function DashboardLayout() {
                         </SidebarMenu>
                     </SidebarContent>
                     <SidebarFooter>
-                        <NavLink to="/dashboard/logout" className={({ isActive }) => isActive ? 'flex gap-x-3 items-center font-bold mx-3 p-3 rounded-lg bg-white text-[#61368E]' : 'flex gap-x-3 items-center text-white mx-3 p-3 rounded-lg  hover:bg-white hover:text-[#61368E]'} end>
+                        <button
+                            onClick={logout}
+                            className="flex w-full text-left gap-x-3 items-center text-white mx-3 p-3 rounded-lg hover:bg-white hover:text-[#61368E]"
+                        >
                             <BiLogOut size={20} />
                             <span>Keluar</span>
-                        </NavLink>
+                        </button>
                     </SidebarFooter>
                 </Sidebar>
 
@@ -59,7 +64,7 @@ function DashboardLayout() {
                     <header className="bg-white py-4 px-10 sticky top-0 flex items-center">
                         <SidebarTrigger className="mr-4" /> {/* Add trigger for mobile view */}
                         <div className="flex flex-1 justify-end">
-                            <h1>Super Admin</h1>
+                            <h1>{user?.name}</h1>
                         </div>
                     </header>
                     <div>
