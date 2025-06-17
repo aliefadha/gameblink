@@ -1,9 +1,10 @@
 import { useState, useEffect, type ReactNode } from 'react';
 
 import { AuthContext, type AuthContextType } from '@/contexts/auth';
-import { login as apiLogin } from '@/lib/api/auth';
+import { login as apiLogin, logout as apiLogout } from '@/lib/api/auth';
 import type { User } from '@/types/User';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
@@ -32,11 +33,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         navigate('/dashboard', { replace: true });
     };
 
-    const logout = () => {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('user');
-        setUser(null);
-        navigate('/login', { replace: true });
+    const logout = async () => {
+        try {
+            await apiLogout();
+            toast.success("Logout Sukses.");
+        } catch (error) {
+            console.error("Error:", error);
+            toast.warning("Logout gagal.")
+        } finally {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('user');
+            setUser(null);
+            navigate('/login', { replace: true });
+        }
     };
 
     const value: AuthContextType = {

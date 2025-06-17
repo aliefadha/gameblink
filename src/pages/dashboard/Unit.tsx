@@ -2,40 +2,36 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLab
 import { Button } from "@/components/ui/button";
 import { BiHomeAlt } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // Import CardContent
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { DataTable } from "@/components/manajemen-unit/data-table";
-import { useQuery } from "@tanstack/react-query";
-import { getUnits } from "@/lib/api/units";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createUnit, getUnitsByCabang } from "@/lib/api/units";
 import { columns } from "@/components/manajemen-unit/columns";
 import { getCabangs } from "@/lib/api/cabangs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Cabang } from "@/types/Cabang";
-
-const FormSchema = z.object({
-    nama_unit: z.string().min(2, {
-        message: "Nama Unit harus lebih dari 2 karakter",
-    }),
-    jenis_konsol: z.string().min(2, {
-        message: "Jenis konsol harus lebih dari 2 karakter",
-    }),
-    harga: z.coerce.number().min(1, {
-        message: "Harga harus lebih dari 0",
-    }),
-})
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TableSkeleton } from "@/components/manajemen-unit/table-skeleton";
+import { toast } from "sonner";
+import { unitFormSchema, type UnitFormData } from "@/lib/validations/unit.schema";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { consoleOptions } from "@/lib/consoleOptions";
 
 function Unit() {
 
+    const queryClient = useQueryClient();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [cabang, setCabang] = useState<Cabang | null>(null);
 
     const { data: units, isLoading, error } = useQuery({
-        queryKey: ['units'],
-        queryFn: getUnits,
+        queryKey: ['units', cabang?.id],
+        queryFn: () => getUnitsByCabang(cabang?.id || ""),
+        enabled: !!cabang
     });
 
     const { data: cabangs, isLoading: isLoadingCabang, error: errorCabang } = useQuery({
@@ -43,26 +39,52 @@ function Unit() {
         queryFn: getCabangs,
     });
 
-    const form = useForm<z.infer<typeof FormSchema>>({
-        resolver: zodResolver(FormSchema),
+
+    const form = useForm<UnitFormData>({
+        resolver: zodResolver(unitFormSchema),
         defaultValues: {
+            cabang_id: "",
             nama_unit: "",
             jenis_konsol: "",
             harga: 0,
         },
     })
 
-    if (isLoading || isLoadingCabang) {
-        return <div>Loading units...</div>;
+    useEffect(() => {
+        if (cabang) {
+            form.setValue('cabang_id', cabang.id);
+        }
+    }, [cabang, form]);
+
+    const mutation = useMutation({
+        mutationFn: createUnit,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['units'] });
+            toast.success("Unit berhasil ditambahkan");
+            setIsDialogOpen(false);
+            form.reset();
+        },
+        onError: (error) => {
+            toast.error(`Gagal menambahkan unit: ${error.message}`);
+        }
+    })
+
+    function onSubmit(data: UnitFormData) {
+        mutation.mutate(data);
     }
 
-    if (error || errorCabang) {
-        return <div>Error</div>;
-    }
-
-    function onSubmit(data: z.infer<typeof FormSchema>) {
-        console.log(data)
-    }
+    const renderTableContent = () => {
+        if (!cabang) {
+            return <div className="text-center p-10">Silakan pilih cabang untuk melihat unit.</div>;
+        }
+        if (isLoading) {
+            return <TableSkeleton />;
+        }
+        if (error) {
+            return <div className="text-center p-10 text-red-600">Terjadi kesalahan saat mengambil data unit.</div>;
+        }
+        return <DataTable columns={columns} data={units || []} />;
+    };
 
     return (
         <div className="p-10 flex flex-col gap-y-4 ">
@@ -75,11 +97,13 @@ function Unit() {
                 </div>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild className="w-full max-w-full md:max-w-3xs lg:max-w-xs">
-                        <Button variant="purple" className="w-full">
+                        <Button variant="purple" className="w-full" disabled={isLoadingCabang}>
                             <div className="flex items-center justify-between w-full">
                                 <h1 className="flex items-center gap-x-2">
                                     <BiHomeAlt size={16} />
-                                    <span className="font-semibold">{cabang?.nama_cabang || "Pilih Cabang"}</span>
+                                    <span className="font-semibold">
+                                        {isLoadingCabang ? "Loading Cabang..." : cabang?.nama_cabang || "Pilih Cabang"}
+                                    </span>
                                 </h1>
                                 <MdKeyboardArrowDown size={24} />
                             </div>
@@ -88,6 +112,7 @@ function Unit() {
                     <DropdownMenuContent className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-20rem)] md:w-96" align="center">
                         <DropdownMenuLabel>Cabang</DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        {errorCabang && <DropdownMenuItem disabled>Gagal memuat cabang</DropdownMenuItem>}
                         {cabangs?.map((cabang) => (
                             <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
                                 {cabang.nama_cabang}
@@ -99,14 +124,30 @@ function Unit() {
             <Card>
                 <CardHeader className="gap-y-4">
                     <CardTitle>
-                        <div className="flex  items-center gap-y-2 justify-between w-full ">
+                        <div className="flex flex-col md:flex-row items-start md:items-center gap-y-2 justify-between w-full ">
                             <h1 className="text-[#61368E] font-bold text-base md:text-xl">
                                 {cabang?.nama_cabang || "Pilih Cabang"}
                             </h1>
-                            <Dialog>
-                                <DialogTrigger asChild>
-                                    <Button variant="purple" size="xl">+ Unit</Button>
-                                </DialogTrigger>
+                            <Dialog onOpenChange={setIsDialogOpen} open={isDialogOpen}>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <div className="inline-block">
+                                                <DialogTrigger asChild>
+                                                    <Button variant="purple" size="xl" disabled={!cabang} >
+                                                        + Unit
+                                                    </Button>
+                                                </DialogTrigger>
+                                            </div>
+                                        </TooltipTrigger>
+
+                                        {!cabang && (
+                                            <TooltipContent>
+                                                <p>Pilih cabang terlebih dahulu untuk menambah unit.</p>
+                                            </TooltipContent>
+                                        )}
+                                    </Tooltip>
+                                </TooltipProvider>
                                 <DialogContent className="sm:max-w-[425px]">
                                     <DialogHeader>
                                         <DialogTitle className="text-[#61368E] font-bold text-xl">Tambah Unit</DialogTitle>
@@ -116,6 +157,27 @@ function Unit() {
                                     </DialogDescription>
                                     <Form {...form}>
                                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                                            <FormField
+                                                control={form.control}
+                                                name="cabang_id"
+                                                render={({ field }) => (
+                                                    <FormItem className="grid grid-cols-6 items-center gap-2 sr-only">
+                                                        <FormLabel className="text-[#6C6C6C] col-span-2">Nama Cabang</FormLabel>
+                                                        <div className="col-span-4 col-start-3 w-full">
+                                                            <FormControl>
+                                                                <Input
+                                                                    placeholder="Nama Cabang"
+                                                                    className="bg-[#F8F5F5] rounded-sm"
+                                                                    disabled
+                                                                    {...field}
+                                                                    value={cabang?.id || ''}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </div>
+                                                    </FormItem>
+                                                )}
+                                            />
                                             <FormField
                                                 control={form.control}
                                                 name="nama_unit"
@@ -138,9 +200,20 @@ function Unit() {
                                                     <FormItem className="grid grid-cols-6 items-center gap-2">
                                                         <FormLabel className="text-[#6C6C6C] col-span-2">Jenis Konsol</FormLabel>
                                                         <div className="col-span-4 col-start-3 w-full">
-                                                            <FormControl>
-                                                                <Input placeholder="Jenis Konsol" className="bg-[#F8F5F5] rounded-sm" {...field} />
-                                                            </FormControl>
+                                                            <Select onValueChange={field.onChange} value={field.value}>
+                                                                <FormControl>
+                                                                    <SelectTrigger className="bg-[#F8F5F5] rounded-sm">
+                                                                        <SelectValue placeholder="Pilih jenis konsol" />
+                                                                    </SelectTrigger>
+                                                                </FormControl>
+                                                                <SelectContent>
+                                                                    {consoleOptions.map((option) => (
+                                                                        <SelectItem key={option} value={option}>
+                                                                            {option}
+                                                                        </SelectItem>
+                                                                    ))}
+                                                                </SelectContent>
+                                                            </Select>
                                                             <FormMessage />
                                                         </div>
                                                     </FormItem>
@@ -149,36 +222,31 @@ function Unit() {
                                             <FormField
                                                 control={form.control}
                                                 name="harga"
-                                                render={({ field }) => {
-                                                    const displayValue = field.value ? `Rp ${Number(field.value).toLocaleString('id-ID')}` : '';
-                                                    return (
-                                                        <FormItem className="grid grid-cols-6 items-center gap-2">
-                                                            <FormLabel className="text-[#6C6C6C] col-span-2">Harga</FormLabel>
-                                                            <div className="col-span-4 col-start-3 w-full">
-                                                                <FormControl>
-                                                                    <Input
-                                                                        placeholder="Rp 0"
-                                                                        className="bg-[#F8F5F5] rounded-sm"
-                                                                        type="text"
-                                                                        value={displayValue}
-                                                                        onChange={(e) => {
-                                                                            const value = e.target.value.replace(/[^\d]/g, '');
-                                                                            field.onChange(value === '' ? 0 : parseInt(value, 10));
-                                                                        }}
-                                                                        onBlur={() => {
-                                                                            field.onBlur();
-                                                                        }}
-                                                                    />
-                                                                </FormControl>
-                                                                <FormMessage />
-                                                            </div>
-                                                        </FormItem>
-                                                    );
-                                                }}
+                                                render={({ field }) => (
+                                                    <FormItem className="grid grid-cols-6 items-center gap-2">
+                                                        <FormLabel className="text-[#6C6C6C] col-span-2">Harga</FormLabel>
+                                                        <div className="col-span-4 col-start-3 w-full">
+                                                            <FormControl>
+                                                                <Input
+                                                                    placeholder="Rp 0"
+                                                                    className="bg-[#F8F5F5] rounded-sm"
+                                                                    type="text" // Keep as text to allow formatting
+                                                                    value={field.value ? `Rp ${Number(field.value).toLocaleString('id-ID')}` : ''}
+                                                                    onChange={(e) => {
+                                                                        const rawValue = e.target.value.replace(/[^\d]/g, '');
+                                                                        const numberValue = rawValue ? parseInt(rawValue, 10) : 0;
+                                                                        field.onChange(numberValue); // Pass the number to the form state
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <FormMessage />
+                                                        </div>
+                                                    </FormItem>
+                                                )}
                                             />
                                             <DialogFooter>
                                                 <DialogClose asChild>
-                                                    <Button variant="outline">Batal</Button>
+                                                    <Button variant="outline" onClick={() => { setIsDialogOpen(false); form.reset(); }}>Batal</Button>
                                                 </DialogClose>
                                                 <Button type="submit" variant="purple">Simpan</Button>
                                             </DialogFooter>
@@ -189,9 +257,9 @@ function Unit() {
                         </div>
                     </CardTitle>
                 </CardHeader>
-                <div className="px-0">
-                    <DataTable columns={columns} data={units || []} />
-                </div>
+                <CardContent className="px-0">
+                    {renderTableContent()}
+                </CardContent>
             </Card>
         </div>
     )

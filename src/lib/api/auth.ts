@@ -16,3 +16,25 @@ export const login = async (credentials: { email: string; password: string }) =>
 
     return response.json();
 };
+
+export const logout = async (): Promise<void> => {
+    const token = localStorage.getItem('access_token');
+
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        headers: headers,
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Server-side logout failed');
+    }
+};

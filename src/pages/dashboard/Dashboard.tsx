@@ -37,6 +37,8 @@ function Dashboard() {
         return <div>Error</div>;
     }
 
+
+
     return (
         <div className="p-4 sm:p-6 md:p-10 flex flex-col gap-y-3 sm:gap-y-4 overflow-y-scroll">
             <div>
@@ -127,12 +129,19 @@ function Dashboard() {
                             </h1>
                             <div className="flex flex-col sm:flex-row gap-2 sm:gap-x-2 justify-end w-full lg:w-1/2">
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild className="w-full sm:w-1/2">
+                                    {/* The `disabled` prop is added to the trigger */}
+                                    <DropdownMenuTrigger asChild className="w-full sm:w-1/2" disabled={!cabangs || cabangs.length === 0}>
                                         <Button variant="purple" className="w-full">
                                             <div className="flex items-center justify-between w-full">
                                                 <h1 className="flex items-center gap-x-2">
                                                     <BiHomeAlt size={16} />
-                                                    <span className="font-semibold">{cabang?.nama_cabang || "Cabang"}</span>
+                                                    {/* The text now changes dynamically based on whether branches exist */}
+                                                    <span className="font-semibold">
+                                                        {cabangs && cabangs.length > 0
+                                                            ? cabang?.nama_cabang || "Pilih Cabang"
+                                                            : "Tidak Ada Cabang"
+                                                        }
+                                                    </span>
                                                 </h1>
                                                 <MdKeyboardArrowDown size={24} />
                                             </div>
@@ -141,11 +150,18 @@ function Dashboard() {
                                     <DropdownMenuContent className="w-[calc(100vw-4rem)] sm:w-96" align="center">
                                         <DropdownMenuLabel>Cabang</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
-                                        {cabangs?.map((cabang) => (
-                                            <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
-                                                {cabang.nama_cabang}
+                                        {/* A check is added to show a message if the cabangs array is empty */}
+                                        {cabangs && cabangs.length > 0 ? (
+                                            cabangs.map((cabang) => (
+                                                <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
+                                                    {cabang.nama_cabang}
+                                                </DropdownMenuItem>
+                                            ))
+                                        ) : (
+                                            <DropdownMenuItem disabled>
+                                                Tidak ada cabang tersedia
                                             </DropdownMenuItem>
-                                        ))}
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                                 <DropdownMenu>

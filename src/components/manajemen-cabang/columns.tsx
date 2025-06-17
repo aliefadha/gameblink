@@ -16,13 +16,13 @@ export const columns: ColumnDef<Cabang>[] = [
         accessorKey: "alamat_cabang",
         header: "Alamat",
     },
-    // {
-    //     accessorKey: "jumlah_unit",
-    //     header: "Jumlah Unit",
-    //     cell: ({ row }) => {
-    //         return row.original.jumlah_unit ? row.original.jumlah_unit : "0"
-    //     }
-    // },
+    {
+        accessorKey: "jumlah_unit",
+        header: "Jumlah Unit",
+        cell: ({ row }) => {
+            return row.original.jumlah_unit ? row.original.jumlah_unit : "0"
+        }
+    },
     {
         accessorKey: "status",
         header: "Status",
