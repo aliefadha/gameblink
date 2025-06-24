@@ -1,3 +1,6 @@
+import type { ApiResponse } from "@/types/Api";
+import type { User } from "@/types/User";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const login = async (credentials: { email: string; password: string }) => {
@@ -14,7 +17,13 @@ export const login = async (credentials: { email: string; password: string }) =>
         throw new Error(errorData.message || 'Login failed');
     }
 
-    return response.json();
+    const result: ApiResponse<User> = await response.json()
+
+    return result.data;
+};
+
+export const getToken = (): string | null => {
+    return localStorage.getItem("access_token");
 };
 
 export const logout = async (): Promise<void> => {

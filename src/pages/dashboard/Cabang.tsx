@@ -28,11 +28,21 @@ function Cabang() {
 
     const queryClient = useQueryClient();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const { data: cabangs, isLoading, error } = useQuery({
+    const { data: cabangs, isLoading } = useQuery({
         queryKey: ['cabangs'],
-        queryFn: getCabangs,
+        queryFn: async () => {
+            try {
+                return await getCabangs();
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    if (error.message.includes("Status: 404")) {
+                        return [];
+                    }
+                }
+                throw error;
+            }
+        },
     });
-
     const form = useForm<CreateCabangData>({
         resolver: zodResolver(createCabangSchema),
         defaultValues: {
@@ -71,10 +81,6 @@ function Cabang() {
         mutation.mutate(formData);
     }
 
-    if (error) {
-        return <div>Error: {error.message}</div>;
-    }
-
     return (
         <div className="p-10 flex flex-col gap-y-4 ">
             <div className="flex md:flex-row flex-col justify-between gap-y-4">
@@ -98,7 +104,6 @@ function Cabang() {
                             </DialogDescription>
                             <Form {...form}>
                                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                                    {/* Other FormFields remain the same */}
                                     <FormField
                                         control={form.control}
                                         name="nama_cabang"

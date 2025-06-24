@@ -11,29 +11,48 @@ import { BiHomeAlt } from "react-icons/bi"
 import { IoFlagOutline } from "react-icons/io5"
 import { LuCalendarDays } from "react-icons/lu"
 import { MdKeyboardArrowDown } from "react-icons/md"
+import { getUnitsByCabang } from "@/lib/api/units"
 
 function DaftarBooking() {
 
     const [cabang, setCabang] = useState<Cabang | null>(null);
 
-    const { data: cabangs, isLoading: isLoadingCabang, error: errorCabang } = useQuery({
+    const { data: cabangs, isLoading: isLoadingCabang, error: cabangsError } = useQuery({
         queryKey: ['cabangs'],
-        queryFn: getCabangs,
+        queryFn: async () => {
+            try {
+                return await getCabangs();
+            } catch (error: unknown) {
+                if (error instanceof Error && error.message.includes("Status: 404")) {
+                    return [];
+                }
+                throw error;
+            }
+        },
     });
 
+    const { data: units, isLoading, error: unitsError } = useQuery({
+        queryKey: ['units', cabang?.id],
+        queryFn: async () => {
+            if (!cabang?.id) return [];
+            try {
+                return await getUnitsByCabang(cabang.id);
+            } catch (error: unknown) {
+                if (error instanceof Error && error.message.includes("Status: 404")) {
+                    return [];
+                }
+                throw error;
+            }
+        },
+        enabled: !!cabang
+    });
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: new Date(2025, 5, 9),
         to: new Date(2025, 5, 26),
     })
 
-    if (isLoadingCabang) {
-        return <div>Loading units...</div>;
-    }
-
-    if (errorCabang) {
-        return <div>Error</div>;
-    }
+    const timeSlots = Array.from({ length: 12 }, (_, i) => `${10 + i}.00`);
 
     return (
         <div className="p-10 flex flex-col gap-y-4 mb-10 ">
@@ -56,8 +75,13 @@ function DaftarBooking() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-20rem)] md:w-96" align="center">
-                            <DropdownMenuLabel>Cabang</DropdownMenuLabel>
+                            <DropdownMenuLabel>Pilih Cabang</DropdownMenuLabel>
                             <DropdownMenuSeparator />
+                            {isLoadingCabang && <DropdownMenuItem disabled>Memuat cabang...</DropdownMenuItem>}
+                            {cabangsError && <DropdownMenuItem disabled className="text-red-600">Gagal memuat cabang</DropdownMenuItem>}
+                            {!isLoadingCabang && !cabangsError && (!cabangs || cabangs.length === 0) && (
+                                <DropdownMenuItem disabled>Tidak ada cabang ditemukan</DropdownMenuItem>
+                            )}
                             {cabangs?.map((cabang) => (
                                 <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
                                     {cabang.nama_cabang}
@@ -111,303 +135,67 @@ function DaftarBooking() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    {/* <div>
-                        <div className="flex gap-x-4 items-center">
-                            <p className="text-xs font-bold text-[#2F2F2F]">Jam</p>
-                            <div className="text-center text-xs w-[85px]">
-                                <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
-                                    <p>TV 01</p>
-                                </div>
-                                <div className="bg-[#F4E9FF] rounded-b-md py-2 w-full font-medium">
-                                    <p>REG PS4</p>
-                                </div>
-                            </div>
+                    {(units ?? []).length > 0 && (
+                        <table className="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th className="text-xs font-bold text-[#2F2F2F] text-left p-2 w-[85px]">Jam</th>
+                                    {units?.map((unit) => (
+                                        <th key={unit.id} className="text-center p-2 w-[85px]">
+                                            <div className="text-center text-xs">
+                                                <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
+                                                    <p>{unit.nama_unit}</p>
+                                                </div>
+                                                <div className="bg-[#F4E9FF] rounded-b-md py-2 w-full font-medium">
+                                                    <p>{unit.jenis_konsol}</p>
+                                                </div>
+                                            </div>
+                                        </th>
+                                    ))}
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {timeSlots.map((time) => (
+                                    <tr key={time}>
+                                        <td className="text-xs font-bold text-[#2F2F2F] p-2">{time}</td>
+                                        {units?.map((unit) => {
+                                            // TODO: Implement logic to get the booking status for the current `unit`, `time`, and selected `dateRange`.
+                                            // Example: const status = getBookingStatus(unit.id, time, dateRange);
+                                            // Based on the status, you can determine the button color.
+                                            // For now, we'll use a default "Tersedia" state.
+
+                                            let buttonClass = "bg-[#F8F5F5] hover:bg-gray-200"; // Default: Tersedia
+                                            // if (status === 'Dipesan') buttonClass = "bg-[#D31A1D]";
+                                            // if (status === 'Aktif') buttonClass = "bg-[#009B4F]";
+
+                                            return (
+                                                <td key={`${time}-${unit.id}`} className="text-center p-2">
+                                                    <Button className={`${buttonClass} w-full`} size="sm">
+                                                    </Button>
+                                                </td>
+                                            );
+                                        })}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                    {unitsError && (
+                        <div className="text-center p-10 text-red-600">
+                            Terjadi kesalahan: {unitsError.message}
                         </div>
-                        <div className="flex gap-x-4 items-center">
-                            <p className="text-xs font-bold text-[#2F2F2F]">10.00</p>
-                            <div className="text-center">
-                                <Button className="bg-[#009B4F] w-[85px]" size="sm">
-                                </Button>
-                            </div>
+                    )}
+                    {isLoading && (
+                        <div className="text-center p-10">
+                            Loading...
+                        </div>)}
+                    {units?.length === 0 && (
+                        <div className="text-center p-10">
+                            Tidak ada unit yang ditemukan untuk cabang ini.
                         </div>
-                    </div> */}
-                    <table className="w-full border-collapse">
-                        <thead>
-                            <tr>
-                                <th className="text-xs font-bold text-[#2F2F2F] text-left p-2 w-[85px]">Jam</th>
-                                <th className="text-center p-2 w-[85px]">
-                                    <div className="text-center text-xs">
-                                        <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
-                                            <p>TV 01</p>
-                                        </div>
-                                        <div className="bg-[#F4E9FF] rounded-b-md py-2 w-full font-medium">
-                                            <p>REG PS4</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th className="text-center p-2 w-[85px]">
-                                    <div className="text-center text-xs">
-                                        <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
-                                            <p>TV 01</p>
-                                        </div>
-                                        <div className="bg-[#F4E9FF] rounded-b-md py-2 w-full font-medium">
-                                            <p>REG PS4</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th className="text-center p-2 w-[85px]">
-                                    <div className="text-center text-xs">
-                                        <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
-                                            <p>TV 01</p>
-                                        </div>
-                                        <div className="bg-[#F4E9FF] rounded-b-md py-2 w-full font-medium">
-                                            <p>REG PS4</p>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th className="text-center p-2 w-[85px]">
-                                    <div className="text-center text-xs">
-                                        <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
-                                            <p>TV 01</p>
-                                        </div>
-                                        <div className="bg-[#F4E9FF] rounded-b-md py-2 w-full font-medium">
-                                            <p>REG PS4</p>
-                                        </div>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">10.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">11.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">12.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#D31A1D] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">13.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">14.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">15.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">16.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#D31A1D] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">17.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">18.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">19.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">20.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#D31A1D] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td className="text-xs font-bold text-[#2F2F2F] p-2">21.00</td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#009B4F] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                                <td className="text-center p-2">
-                                    <Button className="bg-[#F8F5F5] w-full" size="sm">
-                                    </Button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    )
+                    }
                 </CardContent>
             </Card>
         </div>

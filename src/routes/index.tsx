@@ -14,6 +14,10 @@ import Cabang from '@/pages/dashboard/Cabang';
 import Unit from '@/pages/dashboard/Unit';
 import Ketersediaan from '@/pages/dashboard/Ketersediaan';
 import DaftarBooking from '@/pages/dashboard/DaftarBooking';
+import Akses from '@/pages/dashboard/Akses';
+import BookingPage from '@/pages/home/booking/BookingPage';
+import BookingCabang from '@/pages/home/booking/BookingCabang';
+import BookingJadwal from '@/pages/home/booking/BookingJadwal';
 
 export function AppRoutes() {
     return (
@@ -22,6 +26,9 @@ export function AppRoutes() {
             {/* PUBLIC ROUTES                      */}
             {/* ================================================== */}
             {/* The login page is accessible to everyone, logged in or not. */}
+            <Route path='/' element={<BookingPage />} />
+            <Route path='/booking/cabang' element={<BookingCabang />} />
+            <Route path='/booking/jadwal' element={<BookingJadwal />} />
             <Route path="/login" element={<Login />} />
 
 
@@ -43,6 +50,7 @@ export function AppRoutes() {
                     <Route path="unit" element={<Unit />} />
                     <Route path="ketersediaan" element={<Ketersediaan />} />
                     <Route path="daftar-booking" element={<DaftarBooking />} />
+                    <Route path="akses" element={<Akses />} />
                 </Route>
             </Route>
 

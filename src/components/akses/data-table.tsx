@@ -106,7 +106,7 @@ export function DataTable<TData, TValue>({
                                 colSpan={columns.length}
                                 className="h-24 text-center"
                             >
-                                Tidak ada cabang.
+                                Tidak ada user.
                             </TableCell>
                         </TableRow>
                     )}

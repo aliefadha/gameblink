@@ -1,5 +1,5 @@
 export interface Ketersediaan {
-    id_ketersediaan: number;
+    id_ketersediaan: string;
     nama_cabang: string;
     nama_unit: string;
     tanggal_mulai_blokir: string;

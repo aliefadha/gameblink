@@ -2,7 +2,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLab
 import { Button } from "@/components/ui/button";
 import { BiHomeAlt } from "react-icons/bi";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // Import CardContent
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -28,17 +28,35 @@ function Unit() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [cabang, setCabang] = useState<Cabang | null>(null);
 
-    const { data: units, isLoading, error } = useQuery({
+    const { data: units, isLoading, error: unitsError } = useQuery({
         queryKey: ['units', cabang?.id],
-        queryFn: () => getUnitsByCabang(cabang?.id || ""),
+        queryFn: async () => {
+            if (!cabang?.id) return [];
+            try {
+                return await getUnitsByCabang(cabang.id);
+            } catch (error: unknown) {
+                if (error instanceof Error && error.message.includes("Status: 404")) {
+                    return [];
+                }
+                throw error;
+            }
+        },
         enabled: !!cabang
     });
 
-    const { data: cabangs, isLoading: isLoadingCabang, error: errorCabang } = useQuery({
+    const { data: cabangs, isLoading: isLoadingCabang, error: cabangsError } = useQuery({
         queryKey: ['cabangs'],
-        queryFn: getCabangs,
+        queryFn: async () => {
+            try {
+                return await getCabangs();
+            } catch (error: unknown) {
+                if (error instanceof Error && error.message.includes("Status: 404")) {
+                    return [];
+                }
+                throw error;
+            }
+        },
     });
-
 
     const form = useForm<UnitFormData>({
         resolver: zodResolver(unitFormSchema),
@@ -59,10 +77,15 @@ function Unit() {
     const mutation = useMutation({
         mutationFn: createUnit,
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['units'] });
+            queryClient.invalidateQueries({ queryKey: ['units', cabang?.id] });
             toast.success("Unit berhasil ditambahkan");
             setIsDialogOpen(false);
-            form.reset();
+            form.reset({
+                cabang_id: cabang?.id || "",
+                nama_unit: "",
+                jenis_konsol: "",
+                harga: 0,
+            });
         },
         onError: (error) => {
             toast.error(`Gagal menambahkan unit: ${error.message}`);
@@ -80,10 +103,13 @@ function Unit() {
         if (isLoading) {
             return <TableSkeleton />;
         }
-        if (error) {
-            return <div className="text-center p-10 text-red-600">Terjadi kesalahan saat mengambil data unit.</div>;
+        if (unitsError) {
+            return <div className="text-center p-10 text-red-600">Terjadi kesalahan: {unitsError.message}</div>;
         }
-        return <DataTable columns={columns} data={units || []} />;
+        if (!units || units.length === 0) {
+            return <div className="text-center p-10">Tidak ada unit yang ditemukan untuk cabang ini.</div>;
+        }
+        return <DataTable columns={columns} data={units} />;
     };
 
     return (
@@ -110,9 +136,13 @@ function Unit() {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-20rem)] md:w-96" align="center">
-                        <DropdownMenuLabel>Cabang</DropdownMenuLabel>
+                        <DropdownMenuLabel>Pilih Cabang</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        {errorCabang && <DropdownMenuItem disabled>Gagal memuat cabang</DropdownMenuItem>}
+                        {isLoadingCabang && <DropdownMenuItem disabled>Memuat cabang...</DropdownMenuItem>}
+                        {cabangsError && <DropdownMenuItem disabled className="text-red-600">Gagal memuat cabang</DropdownMenuItem>}
+                        {!isLoadingCabang && !cabangsError && (!cabangs || cabangs.length === 0) && (
+                            <DropdownMenuItem disabled>Tidak ada cabang ditemukan</DropdownMenuItem>
+                        )}
                         {cabangs?.map((cabang) => (
                             <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
                                 {cabang.nama_cabang}
@@ -140,7 +170,6 @@ function Unit() {
                                                 </DialogTrigger>
                                             </div>
                                         </TooltipTrigger>
-
                                         {!cabang && (
                                             <TooltipContent>
                                                 <p>Pilih cabang terlebih dahulu untuk menambah unit.</p>
@@ -230,12 +259,12 @@ function Unit() {
                                                                 <Input
                                                                     placeholder="Rp 0"
                                                                     className="bg-[#F8F5F5] rounded-sm"
-                                                                    type="text" // Keep as text to allow formatting
+                                                                    type="text"
                                                                     value={field.value ? `Rp ${Number(field.value).toLocaleString('id-ID')}` : ''}
                                                                     onChange={(e) => {
                                                                         const rawValue = e.target.value.replace(/[^\d]/g, '');
                                                                         const numberValue = rawValue ? parseInt(rawValue, 10) : 0;
-                                                                        field.onChange(numberValue); // Pass the number to the form state
+                                                                        field.onChange(numberValue);
                                                                     }}
                                                                 />
                                                             </FormControl>

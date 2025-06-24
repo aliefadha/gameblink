@@ -1,6 +1,6 @@
 import type { Ketersediaan } from "@/types/Ketersediaan"
 import { type ColumnDef } from "@tanstack/react-table"
-import { AksiColumn } from "../manajemen-ketersediaan/AksiColumn"
+import { DeleteKetersediaanAlert } from "./DeleteKetersediaanAlert"
 
 export const columns: ColumnDef<Ketersediaan>[] = [
     {
@@ -60,7 +60,7 @@ export const columns: ColumnDef<Ketersediaan>[] = [
     {
         id: "aksi",
         header: "Aksi",
-        cell: ({ row }) => <AksiColumn row={row} />,
+        cell: ({ row }) => <DeleteKetersediaanAlert ketersediaanId={row.original.id_ketersediaan} />,
         size: 75
     }
 ]
