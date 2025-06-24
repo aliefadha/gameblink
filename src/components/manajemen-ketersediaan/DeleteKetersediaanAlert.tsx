@@ -8,7 +8,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 
-export function DeleteKetersediaanAlert({ ketersediaanId }: { ketersediaanId: number }) {
+export function DeleteKetersediaanAlert({ ketersediaanId }: { ketersediaanId: string }) {
     const queryClient = useQueryClient();
 
     const deleteMutation = useMutation({
