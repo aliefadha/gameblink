@@ -3,7 +3,7 @@ import { type ColumnDef } from "@tanstack/react-table"
 
 export const columns: ColumnDef<Booking>[] = [
     {
-        accessorKey: "id",
+        accessorKey: "booking_id",
         header: "ID Booking",
     },
     {

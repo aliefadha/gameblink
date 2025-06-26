@@ -17,10 +17,12 @@ export type StepThreeData = {
     tanggal_main: string,
     total_harga: number,
     booking_detail: {
+        nama_unit: string,
+        jenis_konsol: string,
         unit_id: string,
         jam_main: string,
         harga: number,
-    }[]
+    }[],
 }
 
 
@@ -36,13 +38,15 @@ const stepVariant = {
     3: 'stepThree',
 };
 
-
-const useFormStore = create<{
+interface FormStore {
     stepOne: StepOneData | null;
     stepTwo: StepTwoData | null;
     stepThree: StepThreeData | null;
     setData: ({ step, data }: setDataType) => void;
-}>(
+    clearForm: () => void;
+}
+
+const useFormStore = create<FormStore>()(
     devtools((set) => ({
         stepOne: null,
         stepTwo: null,
@@ -52,6 +56,12 @@ const useFormStore = create<{
                 ...state,
                 [stepVariant[step]]: data,
             })),
+        clearForm: () =>
+            set({
+                stepOne: null,
+                stepTwo: null,
+                stepThree: null,
+            }),
     }))
 );
 

@@ -15,9 +15,7 @@ import Unit from '@/pages/dashboard/Unit';
 import Ketersediaan from '@/pages/dashboard/Ketersediaan';
 import DaftarBooking from '@/pages/dashboard/DaftarBooking';
 import Akses from '@/pages/dashboard/Akses';
-import BookingPage from '@/pages/home/booking/BookingPage';
-import BookingCabang from '@/pages/home/booking/BookingCabang';
-import BookingJadwal from '@/pages/home/booking/BookingJadwal';
+import { BookingLayout } from '@/pages/home/booking';
 
 export function AppRoutes() {
     return (
@@ -26,11 +24,10 @@ export function AppRoutes() {
             {/* PUBLIC ROUTES                      */}
             {/* ================================================== */}
             {/* The login page is accessible to everyone, logged in or not. */}
-            <Route path='/' element={<BookingPage />} />
-            <Route path='/booking/cabang' element={<BookingCabang />} />
-            <Route path='/booking/jadwal' element={<BookingJadwal />} />
             <Route path="/login" element={<Login />} />
 
+            {/* Booking flow routes - using the new BookingLayout */}
+            <Route path="/booking/*" element={<BookingLayout />} />
 
             {/* ================================================== */}
             {/* PROTECTED ROUTES                    */}
@@ -59,8 +56,8 @@ export function AppRoutes() {
             {/* REDIRECTS & FALLBACKS                  */}
             {/* ================================================== */}
             {/* If a user lands on the root path "/", automatically redirect them
-          to the dashboard. The ProtectedRoute will then handle access. */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          to the booking page. */}
+            <Route path="/" element={<Navigate to="/booking" replace />} />
 
             {/* A catch-all route for any URL that doesn't match the above.
           This acts as your 404 "Not Found" page. */}
