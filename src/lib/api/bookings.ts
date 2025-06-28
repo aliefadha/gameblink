@@ -1,53 +1,22 @@
-import type { Booking } from "@/types/Booking";
+import type { Booking, CreateBookingRequest, CreateBookingResponse } from "@/types/Booking";
 import { getToken } from "./auth";
 import type { StepOneData, StepTwoData, StepThreeData } from "@/store/UseFormStore";
+import type { ApiResponse } from "@/types/Api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const getBookings = async (): Promise<Booking[]> => {
-    const fullUrl = `${API_BASE_URL}/booking`;
-
-    // Add this log to see the exact URL you are requesting
-    console.log('Fetching from URL:', fullUrl);
+export const getBookings = async (date?: string): Promise<Booking[]> => {
+    let fullUrl = `${API_BASE_URL}/booking`;
+    if (date) fullUrl += `?tanggal_main=${encodeURIComponent(date)}`;
 
 
     const response = await fetch(fullUrl);
 
-    // The error happens on the next line if the response is HTML
-    if (!response.ok) {
-        throw new Error(`Failed to fetch bookings: ${response.statusText}`);
-    }
-
     const data = await response.json();
-    return data;
+    return data.data;
 };
 
-// Types for the booking submission
-export interface CreateBookingRequest {
-    nama: string;
-    nomor_hp: string;
-    email: string;
-    cabang_id: string;
-    tanggal_main: string;
-    tanggal_transaksi: string;
-    metode_pembayaran: string;
-    total_harga: number;
-    status_pembayaran: string;
-    status_booking: string;
-    booking_details: {
-        unit_id: string;
-        jam_main: string;
-        harga: number;
-    }[];
-}
-
-export interface CreateBookingResponse {
-    success: boolean;
-    message: string;
-    data?: Booking;
-}
-
-export const createBooking = async (bookingData: CreateBookingRequest): Promise<CreateBookingResponse> => {
+export const createBooking = async (bookingData: CreateBookingRequest): Promise<ApiResponse<CreateBookingResponse>> => {
     const token = getToken();
     
     const headers: HeadersInit = {
@@ -64,12 +33,12 @@ export const createBooking = async (bookingData: CreateBookingRequest): Promise<
         body: JSON.stringify(bookingData),
     });
 
-    if (!response.ok) {
+    if (response.status !== 201) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || `Booking creation failed with status: ${response.status}`);
     }
 
-    const result: CreateBookingResponse = await response.json();
+    const result: ApiResponse<CreateBookingResponse> = await response.json();
     return result;
 };
 
@@ -79,15 +48,14 @@ export const transformFormDataToBookingRequest = (
     stepTwo: StepTwoData,
     stepThree: StepThreeData
 ): CreateBookingRequest => {
-    // Get current date for tanggal_transaksi
     const currentDate = new Date();
     const tanggalTransaksi = currentDate.toISOString();
     
-    // Transform booking details to match API format
     const bookingDetails = stepThree.booking_detail.map(detail => ({
         unit_id: detail.unit_id,
         jam_main: detail.jam_main,
-        harga: detail.harga
+        harga: detail.harga,
+        tanggal: detail.tanggal
     }));
 
     return {
@@ -97,20 +65,44 @@ export const transformFormDataToBookingRequest = (
         cabang_id: stepTwo.id_cabang,
         tanggal_main: stepThree.tanggal_main,
         tanggal_transaksi: tanggalTransaksi,
-        metode_pembayaran: "QRIS", // Default value, you might want to make this configurable
         total_harga: stepThree.total_harga,
-        status_pembayaran: "Berhasil", // Default value, you might want to make this configurable
-        status_booking: "Aktif", // Default value, you might want to make this configurable
+        status_booking: "Aktif",
         booking_details: bookingDetails
     };
 };
 
-// Convenience function to submit booking from form store data
 export const submitBookingFromFormData = async (
     stepOne: StepOneData,
     stepTwo: StepTwoData,
     stepThree: StepThreeData
 ): Promise<CreateBookingResponse> => {
     const bookingData = transformFormDataToBookingRequest(stepOne, stepTwo, stepThree);
-    return await createBooking(bookingData);
+    const result = await createBooking(bookingData);
+    return result.data;
 };
+
+export const updateBooking = async (bookingId: string, status_booking: string): Promise<ApiResponse<Booking>> => {
+    const token = getToken();
+    const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/booking/${bookingId}`, {
+        method: 'PATCH',
+        headers: headers,
+        body: JSON.stringify({ status_booking }),
+    });
+
+    if (response.status !== 200) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Booking update failed with status: ${response.status}`);
+    }
+
+    const result: ApiResponse<Booking> = await response.json();
+    return result;
+
+}

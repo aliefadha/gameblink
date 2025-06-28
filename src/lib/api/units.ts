@@ -6,7 +6,6 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const getUnits = async (): Promise<Unit[]> => {
     const fullUrl = `${API_BASE_URL}/unit`;
-    console.log('Fetching from URL:', fullUrl);
 
     const response = await fetch(fullUrl);
 
@@ -22,7 +21,6 @@ export const getUnits = async (): Promise<Unit[]> => {
 export const getUnitsByCabang = async (id: string): Promise<Unit[]> => {
     const fullUrl = `${API_BASE_URL}/unit/cabang/${id}`;
 
-    console.log('Fetching from URL:', fullUrl);
 
     const response = await fetch(fullUrl);
 
@@ -72,7 +70,6 @@ export const deleteUnit = async (id: string): Promise<void> => {
 export const getUnitByCabang = async (id: string): Promise<Unit[]> => {
     const fullUrl = `${API_BASE_URL}/unit/cabang/${id}`;
 
-    console.log('Fetching from URL:', fullUrl);
 
     const response = await fetch(fullUrl);
 

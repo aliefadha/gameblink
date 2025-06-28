@@ -11,7 +11,7 @@ export function AksiColumn({ row }: AksiColumnProps) {
     const cabang = row.original;
 
     return (
-        <div className="flex items-center justify-start lg:justify-center  flex-wrap">
+        <div className="flex items-center justify-start lg:justify-center flex-wrap">
             <EditCabangDialog cabang={cabang} />
             <DeleteCabangAlert cabangId={cabang.id} cabangName={cabang.nama_cabang} />
         </div>

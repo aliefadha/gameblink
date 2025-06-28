@@ -80,6 +80,7 @@ function Ketersediaan() {
             tanggal_selesai_blokir: "",
             jam_selesai_blokir: "",
             keterangan: "",
+            status_perbaikan: "Pending",
         },
     });
 
@@ -131,14 +132,14 @@ function Ketersediaan() {
 
 
     function onSubmit(data: KetersediaanFormData) {
-        const payload = omit(data, ['nama_cabang', 'nama_unit']);
+        const payload = omit(data, ['nama_cabang', 'nama_unit', 'jam_selesai_blokir', 'tanggal_selesai_blokir']);
         mutation.mutate(payload);
     }
 
     const getUnitPlaceholder = () => {
         if (isLoadingUnits) return "Memuat unit...";
         if (isUnitsError) return "Unit tidak ditemukan";
-        if (!selectedCabang) return "Pilih cabang dulu";
+        if (!selectedCabang) return "Pilih cabang terlebih dahulu";
         if (!units || units.length === 0) return "Unit tidak ditemukan";
         return "Pilih unit";
     };
@@ -301,53 +302,6 @@ function Ketersediaan() {
                                         render={({ field }) => (
                                             <FormItem className="grid grid-cols-6 items-center gap-2">
                                                 <FormLabel className="text-[#6C6C6C] col-span-2">Jam Mulai</FormLabel>
-                                                <div className="col-span-4 col-start-3 w-full">
-                                                    <FormControl>
-                                                        <Input type="time" className="bg-[#F8F5F5] rounded-sm" {...field} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="tanggal_selesai_blokir"
-                                        render={({ field }) => (
-                                            <FormItem className="grid grid-cols-6 items-center gap-2">
-                                                <FormLabel className="col-span-2 text-[#6C6C6C]">Tanggal Selesai</FormLabel>
-                                                <div className="col-span-4 col-start-3 w-full">
-                                                    <Popover>
-                                                        <PopoverTrigger asChild>
-                                                            <FormControl>
-                                                                <Button
-                                                                    variant={"outline"}
-                                                                    className="w-full justify-between rounded-sm border-input text-muted-foreground"
-                                                                >
-                                                                    {field.value ? new Date(field.value).toLocaleDateString() : <span>Pilih tanggal</span>}
-                                                                    <ChevronDownIcon className="ml-2 h-4 w-4" />
-                                                                </Button>
-                                                            </FormControl>
-                                                        </PopoverTrigger>
-                                                        <PopoverContent className="w-auto p-0" align="start">
-                                                            <Calendar
-                                                                mode="single"
-                                                                selected={field.value ? new Date(field.value) : undefined}
-                                                                onSelect={(date) => field.onChange(date?.toISOString())}
-                                                            />
-                                                        </PopoverContent>
-                                                    </Popover>
-                                                    <FormMessage />
-                                                </div>
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="jam_selesai_blokir"
-                                        render={({ field }) => (
-                                            <FormItem className="grid grid-cols-6 items-center gap-2">
-                                                <FormLabel className="text-[#6C6C6C] col-span-2">Jam Selesai</FormLabel>
                                                 <div className="col-span-4 col-start-3 w-full">
                                                     <FormControl>
                                                         <Input type="time" className="bg-[#F8F5F5] rounded-sm" {...field} />

@@ -14,17 +14,15 @@ import {
     TableRow,
 } from "@/components/ui/table"
 
-interface DataTableProps<TData, TValue> {
+interface BookingDetailsTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
-    data: TData[],
-    isLoading: boolean
+    data: TData[]
 }
 
-export function DataTable<TData, TValue>({
+export function BookingDetailsTable<TData, TValue>({
     columns,
     data,
-    isLoading
-}: DataTableProps<TData, TValue>) {
+}: BookingDetailsTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
         columns,
@@ -32,15 +30,21 @@ export function DataTable<TData, TValue>({
     })
 
     return (
-        <div className="rounded-md">
+        <div className="w-full rounded-lg border">
             <Table>
-                <TableHeader className="bg-[#61368E] p-4 rounded-t-2xl">
+                <TableHeader className="bg-[#61368E] rounded-t-lg">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
-                            <TableHead className="w-[50px]">No</TableHead>
                             {headerGroup.headers.map((header) => {
                                 return (
-                                    <TableHead key={header.id}>
+                                    <TableHead 
+                                        key={header.id}
+                                        className="text-white text-xs font-medium py-2 px-3"
+                                        style={{
+                                            minWidth: header.column.columnDef.size,
+                                            maxWidth: header.column.columnDef.size,
+                                        }}
+                                    >
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
@@ -54,22 +58,22 @@ export function DataTable<TData, TValue>({
                     ))}
                 </TableHeader>
                 <TableBody className="bg-white">
-                    {isLoading ? (
-                        <TableRow>
-                            <TableCell colSpan={columns.length + 1} className="h-24 text-center">
-                                Loading...
-                            </TableCell>
-                        </TableRow>
-                    ) : table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row, index) => (
+                    {table.getRowModel().rows?.length ? (
+                        table.getRowModel().rows.map((row) => (
                             <TableRow
-                                className="text-[#61368E] p-4 font-medium"
+                                className="text-[#61368E] font-medium hover:bg-gray-50"
                                 key={row.id}
                                 data-state={row.getIsSelected() && "selected"}
                             >
-                                <TableCell className="text-center">{index + 1}</TableCell>
                                 {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id}>
+                                    <TableCell 
+                                        key={cell.id}
+                                        className="text-xs py-2 px-3"
+                                        style={{
+                                            minWidth: cell.column.columnDef.size,
+                                            maxWidth: cell.column.columnDef.size,
+                                        }}
+                                    >
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                                     </TableCell>
                                 ))}
@@ -77,13 +81,13 @@ export function DataTable<TData, TValue>({
                         ))
                     ) : (
                         <TableRow>
-                            <TableCell colSpan={columns.length + 1} className="h-24 text-center">
-                                No results.
+                            <TableCell colSpan={columns.length} className="h-16 text-center text-gray-500 text-sm">
+                                Tidak ada detail booking.
                             </TableCell>
                         </TableRow>
                     )}
                 </TableBody>
             </Table>
-        </div >
+        </div>
     )
-}
+} 

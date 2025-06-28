@@ -1,7 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 
 import { AuthContext, type AuthContextType } from '@/contexts/auth';
-import { login as apiLogin, logout as apiLogout } from '@/lib/api/auth';
+import { login as apiLogin, logout as apiLogout, getProfile } from '@/lib/api/auth';
 import type { User } from '@/types/User';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
@@ -13,36 +13,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const token = localStorage.getItem('access_token');
-        const storedUser = localStorage.getItem('user');
-        if (token && storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                console.error("Failed to parse user from localStorage", error);
-                localStorage.clear();
-            }
+        if (token) {
+            getProfile(token)
+                .then((profile: User) => setUser(profile))
+                .catch(() => {
+                    setUser(null);
+                    localStorage.removeItem('access_token');
+                })
+                .finally(() => setIsLoading(false));
+        } else {
+            setIsLoading(false);
         }
-        setIsLoading(false);
     }, []);
 
     const login = async (credentials: { email: string; password: string }) => {
-        const { access_token, user } = await apiLogin(credentials);
+        const { access_token } = await apiLogin(credentials);
         localStorage.setItem('access_token', access_token);
-        localStorage.setItem('user', JSON.stringify(user));
-        setUser(user);
-        navigate('/dashboard', { replace: true });
+        const profile: User = await getProfile(access_token);
+        setUser(profile);
+
+        // Redirect based on role
+        if (profile.role === 'SUPERADMIN') {
+            navigate('/dashboard', { replace: true });
+        } else if (profile.role === 'ADMIN') {
+            navigate('/dashboard/booking', { replace: true });
+        } else {
+            navigate('/login', { replace: true });
+        }
     };
 
     const logout = async () => {
         try {
             await apiLogout();
             toast.success("Logout Sukses.");
-        } catch (error) {
-            console.error("Error:", error);
-            toast.warning("Logout gagal.")
+        } catch {
+            toast.warning("Logout gagal.");
         } finally {
             localStorage.removeItem('access_token');
-            localStorage.removeItem('user');
             setUser(null);
             navigate('/login', { replace: true });
         }

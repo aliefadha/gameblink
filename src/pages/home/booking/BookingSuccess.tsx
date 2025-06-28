@@ -1,43 +1,20 @@
-import { useLocation, useNavigate } from "react-router";
-import { FaCheckCircle } from "react-icons/fa";
-import { Button } from "@/components/ui/button";
-
 function BookingSuccess() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { bookingId, message } = location.state || {};
 
   return (
-    <div className="p-5 max-w-[350px] md:max-w-xl lg:max-w-3xl mx-auto gap-y-6 flex flex-col items-center justify-center min-h-screen">
-      <div className="text-center">
-        <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4" />
-        <h1 className="text-2xl font-bold text-[#222] mb-2">Booking Berhasil!</h1>
-        <p className="text-gray-600 mb-4">
-          {message || 'Booking Anda telah berhasil dibuat dan sedang diproses.'}
-        </p>
-        
-        {bookingId && (
-          <div className="bg-[#FAF8F7] rounded-xl p-4 mb-6">
-            <p className="text-sm text-gray-600 mb-1">ID Booking:</p>
-            <p className="font-mono text-sm font-semibold text-[#222]">{bookingId}</p>
-          </div>
-        )}
-        
-        <div className="space-y-3">
-          <Button 
-            onClick={() => navigate('/')}
-            className="w-full bg-[#00A651] text-white font-bold"
-          >
-            Kembali ke Beranda
-          </Button>
-          
-          <Button 
-            onClick={() => navigate('/booking')}
-            variant="outline"
-            className="w-full"
-          >
-            Buat Booking Baru
-          </Button>
+    <div className="h-screen bg-[url('/images/bg-login.png')] bg-cover flex items-center justify-center flex-col gap-y-12">
+       <img src="/images/logo.svg" alt="logo" className="mx-auto w-[200px] h-auto" />
+      <div className="bg-white p-5 max-w-[350px] md:max-w-xl lg:max-w-3xl mx-auto gap-y-6 flex flex-col items-center justify-center rounded-xl">
+        <div className="text-center">
+          <img 
+            src="/images/logo-success.png" 
+            alt="Booking Success Astronaut" 
+            className="mx-auto mb-4" 
+            style={{height: 200, width: 230, objectFit: 'cover'}}
+          />
+          <h1 className="text-2xl font-bold text-[#222] mb-2">Pembayaran Booking Berhasil</h1>
+          <p className="text-gray-600 mb-4 text-sm md:text-base">
+            Cek email sekarang! Kami telah mengirimkan bukti pembayaran ke email kamu (Jangan lupa cek folder spam). Lalu tunjukkan bukti tersebut ke operator kami saat akan bermain di Gameblink
+          </p>
         </div>
       </div>
     </div>

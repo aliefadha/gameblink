@@ -8,7 +8,6 @@ import DashboardLayout from '@/layouts/DashboardLayout';
 
 // Import all the page components
 import Login from '@/pages/authentication/Login';
-import Dashboard from '@/pages/dashboard/Dashboard';
 import Booking from '@/pages/dashboard/Booking';
 import Cabang from '@/pages/dashboard/Cabang';
 import Unit from '@/pages/dashboard/Unit';
@@ -16,6 +15,8 @@ import Ketersediaan from '@/pages/dashboard/Ketersediaan';
 import DaftarBooking from '@/pages/dashboard/DaftarBooking';
 import Akses from '@/pages/dashboard/Akses';
 import { BookingLayout } from '@/pages/home/booking';
+import BookingSuccess from '@/pages/home/booking/BookingSuccess';
+import DashboardPage from '@/pages/dashboard/Dashboard';
 
 export function AppRoutes() {
     return (
@@ -26,31 +27,32 @@ export function AppRoutes() {
             {/* The login page is accessible to everyone, logged in or not. */}
             <Route path="/login" element={<Login />} />
 
+
             {/* Booking flow routes - using the new BookingLayout */}
             <Route path="/booking/*" element={<BookingLayout />} />
-
+            <Route path="/booking/success" element={<BookingSuccess />} />
             {/* ================================================== */}
             {/* PROTECTED ROUTES                    */}
             {/* ================================================== */}
             {/* This <Route> acts as a gatekeeper. Any route nested inside
           will first be checked by the ProtectedRoute component. */}
-            <Route element={<ProtectedRoute />}>
-                {/* The DashboardLayout will be rendered for all nested dashboard routes.
-            It contains the sidebar, header, and an <Outlet /> for child routes. */}
+            {/* SUPERADMIN: All dashboard routes */}
+            <Route element={<ProtectedRoute allowedRoles={['SUPERADMIN']} />}>
                 <Route path="dashboard" element={<DashboardLayout />}>
-                    {/* The default page when navigating to "/dashboard" */}
-                    <Route index element={<Dashboard />} />
-
-                    {/* Other pages that will render inside the DashboardLayout's <Outlet /> */}
-                    <Route path="booking" element={<Booking />} />
+                    <Route index element={<DashboardPage />} />
                     <Route path="cabang" element={<Cabang />} />
                     <Route path="unit" element={<Unit />} />
                     <Route path="ketersediaan" element={<Ketersediaan />} />
-                    <Route path="daftar-booking" element={<DaftarBooking />} />
                     <Route path="akses" element={<Akses />} />
                 </Route>
             </Route>
-
+            {/* ADMIN: Only booking and daftar-booking */}
+            <Route element={<ProtectedRoute allowedRoles={['ADMIN', 'SUPERADMIN']} />}>
+                <Route path="dashboard" element={<DashboardLayout />}>
+                    <Route path="booking" element={<Booking />} />
+                    <Route path="daftar-booking" element={<DaftarBooking />} />
+                </Route>
+            </Route>
 
             {/* ================================================== */}
             {/* REDIRECTS & FALLBACKS                  */}

@@ -26,7 +26,6 @@ function BookingPage() {
     });
 
     const onSubmit = (data: StepOneData) => {
-        console.log(data);
         setData({ step: 1, data });
         navigate('/booking/cabang');
     };

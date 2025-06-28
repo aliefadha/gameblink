@@ -1,5 +1,6 @@
 import type { Ketersediaan } from "@/types/Ketersediaan"
 import { type ColumnDef } from "@tanstack/react-table"
+import EditKetersediaanDialog from "./EditKetersediaanDialog"
 import { DeleteKetersediaanAlert } from "./DeleteKetersediaanAlert"
 
 export const columns: ColumnDef<Ketersediaan>[] = [
@@ -40,7 +41,10 @@ export const columns: ColumnDef<Ketersediaan>[] = [
         header: "Tanggal Selesai Blokir",
         size: 75,
         cell: ({ row }) => {
-            const date = new Date(row.getValue("tanggal_selesai_blokir"))
+            const dateValue = row.getValue("tanggal_selesai_blokir")
+            if (!dateValue) return "-"
+            
+            const date = new Date(dateValue as string)
             const day = date.getDate().toString().padStart(2, '0')
             const month = (date.getMonth() + 1).toString().padStart(2, '0')
             const year = date.getFullYear()
@@ -51,16 +55,29 @@ export const columns: ColumnDef<Ketersediaan>[] = [
         accessorKey: "jam_selesai_blokir",
         header: "Jam Selesai Blokir",
         size: 75,
+        cell: ({ row }) => {
+            const timeValue = row.getValue("jam_selesai_blokir")
+            if (!timeValue) return "-"
+            return timeValue as string
+        }
     },
     {
         accessorKey: "keterangan",
         header: "Keterangan",
-        size: 100
+    },
+    {
+        accessorKey: "status_perbaikan",
+        header: "Status Perbaikan",
     },
     {
         id: "aksi",
         header: "Aksi",
-        cell: ({ row }) => <DeleteKetersediaanAlert ketersediaanId={row.original.id_ketersediaan} />,
-        size: 75
+        cell: ({ row }) => (
+            <div className="flex  items-center justify-start lg:justify-center flex-wrap">
+                <EditKetersediaanDialog ketersediaan={row.original} />
+                <DeleteKetersediaanAlert ketersediaanId={row.original.id_ketersediaan} />
+            </div>
+        ),
+        size: 120
     }
 ]

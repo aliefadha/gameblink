@@ -9,7 +9,6 @@ export const getUsers = async (): Promise<User[]> => {
     const fullUrl = `${API_BASE_URL}/user`;
     const token = getToken();
 
-    console.log('Fetching from URL:', fullUrl);
 
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
@@ -40,8 +39,6 @@ export const deleteUser = async (id: string): Promise<void> => {
     const fullUrl = `${API_BASE_URL}/user/${id}`;
     const token = getToken();
 
-    console.log('Fetching from URL:', fullUrl);
-
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
     };
@@ -68,7 +65,6 @@ export const createUser = async (userData: UserFormData): Promise<User> => {
 
     const token = getToken();
 
-    console.log('Fetching from URL:', fullUrl);
 
 
     const response = await fetch(fullUrl, {

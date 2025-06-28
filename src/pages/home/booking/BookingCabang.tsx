@@ -31,7 +31,6 @@ function BookingCabang() {
     }, [stepOne, navigate])
 
     const handleCabang = (data: StepTwoData) => {
-        console.log(data);
         setData({ step: 2, data });
         navigate('/booking/jadwal');
     };
@@ -43,23 +42,29 @@ function BookingCabang() {
                 <div className="text-center py-10">Loading...</div>
             ) : (
                 <div className="space-y-5">
-                    {cabangs?.map((cabang) => (
-                        <button
-                            className="w-full h-[70px] relative"
-                            key={cabang.id}
-                            onClick={() => handleCabang({
-                                id_cabang: `${cabang.id}`,
-                                nama_cabang: `${cabang.nama_cabang}`
-                            })}>
-                            <div className="w-full h-[70px] relative">
-                                <img src={`${import.meta.env.VITE_API_BASE_URL}${cabang.imageCabang}`} className="h-full w-full object-cover rounded-xl" />
-                                <div className="absolute inset-0 bg-linear-to-r opacity-80 from-[#000000] to-[#61368E] rounded-2xl"></div>
-                                <div className="absolute inset-0 flex items-center justify-start p-4">
-                                    <h1 className="text-white font-semibold">{cabang.nama_cabang}</h1>
+                    {cabangs && cabangs.filter(cabang => (cabang.status === 'Aktif' && cabang.jumlah_unit > 0)).length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-gray-400">
+                            <span className="text-lg font-medium">Tidak ada cabang</span>
+                        </div>
+                    ) : (
+                        cabangs?.filter(cabang => cabang.status === 'Aktif' && cabang.jumlah_unit > 0).map((cabang) => (
+                            <button
+                                className="w-full h-[70px] relative"
+                                key={cabang.id}
+                                onClick={() => handleCabang({
+                                    id_cabang: `${cabang.id}`,
+                                    nama_cabang: `${cabang.nama_cabang}`
+                                })}>
+                                <div className="w-full h-[70px] relative">
+                                    <img src={`${import.meta.env.VITE_API_BASE_URL}${cabang.imageCabang}`} className="h-full w-full object-cover rounded-xl" />
+                                    <div className="absolute inset-0 bg-linear-to-r opacity-80 from-[#000000] to-[#61368E] rounded-2xl"></div>
+                                    <div className="absolute inset-0 flex items-center justify-start p-4">
+                                        <h1 className="text-white font-semibold">{cabang.nama_cabang}</h1>
+                                    </div>
                                 </div>
-                            </div>
-                        </button>
-                    ))}
+                            </button>
+                        ))
+                    )}
                 </div>
             )}
         </div>

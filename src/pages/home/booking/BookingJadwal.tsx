@@ -1,6 +1,8 @@
 import useFormStore from "@/store/UseFormStore";
 import { useQuery } from "@tanstack/react-query";
 import { getUnitsByCabang } from "@/lib/api/units";
+import { getBookings } from "@/lib/api/bookings";
+import { getKetersediaans } from "@/lib/api/ketersediaans";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { format, addDays, isSameDay } from "date-fns";
@@ -15,12 +17,13 @@ import {
   DrawerClose,
 } from "@/components/ui/drawer";
 import { useNavigate } from "react-router";
+import type { Ketersediaan } from "@/types/Ketersediaan";
 
 function BookingJadwal() {
     const {stepTwo, setData} = useFormStore();
     const navigate = useNavigate();
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-    const [selectedSlots, setSelectedSlots] = useState<{ unitId: string; nama_unit: string; jenis_konsol: string; jam: string, harga: number }[]>([]);
+    const [selectedSlots, setSelectedSlots] = useState<{ unitId: string; nama_unit: string; jenis_konsol: string; jam: string, harga: number, tanggal: string }[]>([]);
     const cabangId = stepTwo?.id_cabang;
     const { data: units, isLoading, error: unitsError } = useQuery({
         queryKey: ["units", cabangId],
@@ -30,12 +33,113 @@ function BookingJadwal() {
         },
         enabled: !!cabangId,
     });
+
+    const { data: bookings } = useQuery({
+        queryKey: [
+            'bookings',
+            cabangId,
+            selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
+        ],
+        queryFn: async () => {
+            if (!cabangId || !selectedDate) return [];
+            const allBookings = await getBookings(format(selectedDate, 'yyyy-MM-dd'));
+            return allBookings.filter((b: import("@/types/Booking").Booking) => b.cabang_id === cabangId);
+        },
+        enabled: !!cabangId && !!selectedDate
+    });
+
+    const { data: ketersediaans } = useQuery({
+        queryKey: [
+            'ketersediaans',
+            selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
+        ],
+        queryFn: async () => {
+            try {
+                return await getKetersediaans();
+            } catch (error: unknown) {
+                if (error instanceof Error && error.message.includes("Status: 404")) {
+                    return [];
+                }
+                throw error;
+            }
+        },
+    });
+
+    const isUnitBlocked = (unitName: string, time: string, date: Date): boolean => {
+        if (!ketersediaans) return false;
+        
+        const dateStr = format(date, 'yyyy-MM-dd');
+        
+        return ketersediaans.some((ketersediaan: Ketersediaan) => {
+            if (ketersediaan.nama_unit !== unitName || ketersediaan.nama_cabang !== stepTwo?.nama_cabang) {
+                return false;
+            }
+            
+            if (ketersediaan.status_perbaikan !== "Selesai" && ketersediaan.status_perbaikan !== "Pending") {
+                return false;
+            }
+            
+            const startDate = format(new Date(ketersediaan.tanggal_mulai_blokir), 'yyyy-MM-dd');
+            const endDate = ketersediaan.tanggal_selesai_blokir ? format(new Date(ketersediaan.tanggal_selesai_blokir), 'yyyy-MM-dd') : null;
+            
+            if (dateStr < startDate) {
+                return false;
+            }
+            
+            const currentTime = parseInt(time.replace('.00', ''));
+            const startTime = parseInt(ketersediaan.jam_mulai_blokir.replace('.00', ''));
+            
+            // If we're on the start date, check if current time is after jam_mulai_blokir
+            if (dateStr === startDate && currentTime < startTime) {
+                return false;
+            }
+            
+            // For Pending status: block from start date and time onwards (no end time)
+            if (ketersediaan.status_perbaikan === "Pending") {
+                return true;
+            }
+            
+            // For Selesai status: check end date and time constraints
+            if (ketersediaan.status_perbaikan === "Selesai") {
+                if (endDate && dateStr > endDate) {
+                    return false;
+                }
+                
+                const endTime = ketersediaan.jam_selesai_blokir ? parseInt(ketersediaan.jam_selesai_blokir.replace('.00', '')) : null;
+                
+                // If we're on the end date, check if current time is before jam_selesai_blokir
+                if (endDate && dateStr === endDate && endTime && currentTime > endTime) {
+                    return false;
+                }
+                
+                // For dates in between, block all times
+                if (dateStr > startDate && (!endDate || dateStr < endDate)) {
+                    return true;
+                }
+                
+                // For start and end dates, check if time is within the blocking range
+                if (dateStr === startDate || (endDate && dateStr === endDate)) {
+                    if (endTime) {
+                        return currentTime >= startTime && currentTime <= endTime;
+                    } else {
+                        return currentTime >= startTime;
+                    }
+                }
+            }
+            
+            return false;
+        });
+    };
+
     const timeSlots = Array.from({ length: 15 }, (_, i) => `${10 + i}.00`);
     const days = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i));
     const hari = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
     const totalHarga = selectedSlots.reduce((sum, slot) => sum + (slot.harga || 0), 0);
     const formatRupiah = (value: number) =>
         "Rp" + value.toLocaleString("id-ID");
+    
+
+
     return(
         <div className="p-5 max-w-[350px] md:max-w-xl lg:max-w-3xl mx-auto gap-y-6 flex flex-col overflow-y-auto pb-32">
             {stepTwo && (
@@ -72,6 +176,9 @@ function BookingJadwal() {
                             <span className="flex items-center gap-1 text-sm text-[#888]">
                                 <span className="inline-block w-3 h-3 rounded-full bg-green-600"></span> Aktif
                             </span>
+                            <span className="flex items-center gap-1 text-sm text-[#888]">
+                                <span className="inline-block w-3 h-3 rounded-full bg-gray-600"></span> Diblokir
+                            </span>
                         </div>
                     </div>
                     {(units ?? []).length > 0 && (
@@ -105,21 +212,47 @@ function BookingJadwal() {
                                                     nama_unit: unit.nama_unit,
                                                     jenis_konsol: unit.jenis_konsol,
                                                     harga: unit.harga,
+                                                    tanggal: selectedDate.toISOString(),
                                                 };
+                                                
                                                 const isSelected = selectedSlots.some(
                                                     (slot) =>
                                                         slot.unitId === unit.id &&
-                                                        slot.jam === time
+                                                        slot.jam === time &&
+                                                        slot.tanggal === selectedDate.toISOString()
                                                 );
-                                                const buttonClass = isSelected
-                                                    ? "bg-green-500 text-white hover:bg-green-600"
-                                                    : "bg-[#F8F5F5] hover:bg-gray-200";
+                                                
+                                                const isBooked = (bookings ?? []).some((booking: import("@/types/Booking").Booking) =>
+                                                    booking.booking_details?.some((detail: import("@/types/Booking").BookingDetail) =>
+                                                        detail.unit_id === unit.id &&
+                                                        detail.jam_main === time &&
+                                                        format(new Date(detail.tanggal), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+                                                    )
+                                                );
+                                                
+                                                const isBlocked = isUnitBlocked(unit.nama_unit, time, selectedDate);
+                                                
+                                                let buttonClass = "bg-[#F8F5F5] hover:bg-gray-200";
+                                                let isDisabled = false;
+                                                
+                                                if (isBooked) {
+                                                    buttonClass = "bg-[#D31A1D] text-white hover:bg-[#D31A1D] disable:bg-[#D31A1D] disabled:cursor-not-allowed";
+                                                    isDisabled = true;
+                                                } else if (isBlocked) {
+                                                    buttonClass = "bg-gray-600 text-white hover:bg-gray-600 disable:bg-gray-600 disabled:cursor-not-allowed";
+                                                    isDisabled = true;
+                                                } else if (isSelected) {
+                                                    buttonClass = "bg-green-500 text-white hover:bg-green-600";
+                                                }
+                                                
                                                 return (
                                                     <td key={`${time}-${unit.id}`} className="text-center p-2">
                                                         <Button
                                                             className={`${buttonClass} w-full`}
                                                             size="sm"
+                                                            disabled={isDisabled}
                                                             onClick={() => {
+                                                                if (isDisabled) return;
                                                                 setSelectedSlots((prev) => {
                                                                     let updated;
                                                                     if (isSelected) {
@@ -128,6 +261,7 @@ function BookingJadwal() {
                                                                                 !(
                                                                                     slot.unitId === unit.id &&
                                                                                     slot.jam === time
+                                                                                    && slot.tanggal === selectedDate.toISOString()
                                                                                 )
                                                                         );
                                                                     } else {
@@ -172,8 +306,9 @@ function BookingJadwal() {
                         </div>
                     </DrawerTrigger>
                     <button
-                        className="w-full bg-[#00A651] text-white font-bold text-lg py-3 focus:outline-none"
+                        className={`w-full text-white font-bold text-lg py-3 focus:outline-none ${selectedSlots.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00A651]'}`}
                         onClick={() => {
+                            if (selectedSlots.length === 0) return;
                             setData({
                                 step: 3,
                                 data: {
@@ -185,11 +320,13 @@ function BookingJadwal() {
                                         harga: slot.harga,
                                         nama_unit: slot.nama_unit,
                                         jenis_konsol: slot.jenis_konsol,
+                                        tanggal: selectedDate.toISOString(),
                                     })),
                                 }
                             });
                             navigate('/booking/details');
                         }}
+                        disabled={selectedSlots.length === 0}
                     >
                         LANJUT
                     </button>

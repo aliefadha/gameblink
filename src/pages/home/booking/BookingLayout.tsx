@@ -29,7 +29,15 @@ function BookingLayout() {
         }
     }, [location.pathname]);
 
-    // Check if user can access current step
+    useEffect(() => {
+        const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js"
+        const script = document.createElement("script");
+        script.src = snapScript;
+        script.setAttribute("data-client-key", import.meta.env.MIDTRANS_CLIENT_KEY || "");
+        script.async = true;
+        document.body.appendChild(script);
+      }, []);
+
     useEffect(() => {
         if (currentStep === 2 && !stepOne) {
             navigate('/booking');
@@ -56,7 +64,7 @@ function BookingLayout() {
                     )}
                     <img src="/images/logo.svg" alt="logo" className="mx-auto w-[125px] h-auto" />
                 </div>
-                <h1 className="text-4xl text-white font-bold font-nebula">
+                <h1 className="text-4xl text-white font-bold font-nebula text-center">
                     {location.pathname === "/booking/details"
                         ? "BOOKING SUMMARY"
                         : location.pathname === "/booking/jadwal" && stepTwo?.nama_cabang

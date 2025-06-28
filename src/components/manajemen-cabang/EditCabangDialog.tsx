@@ -65,16 +65,6 @@ export function EditCabangDialog({ cabang }: EditCabangDialogProps) {
 
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);
-        if (!open) {
-            form.reset({
-                id: cabang.id,
-                nama_cabang: cabang.nama_cabang,
-                alamat_cabang: cabang.alamat_cabang,
-                status: cabang.status,
-                file: undefined, // Explicitly reset file
-            });
-            setPreview(null);
-        }
     };
 
     return (

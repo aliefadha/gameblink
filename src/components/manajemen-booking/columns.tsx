@@ -1,9 +1,10 @@
 import type { Booking } from "@/types/Booking"
 import { type ColumnDef } from "@tanstack/react-table"
+import { EditBooking } from "./EditBooking"
 
 export const columns: ColumnDef<Booking>[] = [
     {
-        accessorKey: "booking_id",
+        accessorKey: "booking_code",
         header: "ID Booking",
     },
     {
@@ -19,12 +20,8 @@ export const columns: ColumnDef<Booking>[] = [
         header: "Email",
     },
     {
-        accessorKey: "cabang",
+        accessorKey: "nama_cabang",
         header: "Cabang",
-    },
-    {
-        accessorKey: "unit",
-        header: "Unit",
     },
     {
         accessorKey: "tanggal_main",
@@ -36,10 +33,6 @@ export const columns: ColumnDef<Booking>[] = [
             const year = date.getFullYear()
             return `${day}-${month}-${year}`
         }
-    },
-    {
-        accessorKey: "jam_main",
-        header: "Jam Main",
     },
     {
         accessorKey: "tanggal_transaksi",
@@ -78,11 +71,11 @@ export const columns: ColumnDef<Booking>[] = [
             const status = row.getValue("status_pembayaran") as string
             return (
                 <div>
-                    <span className={`flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize ${status === "berhasil"
+                    <span className={`flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize ${status === "Berhasil"
                         ? "bg-[#009B4F] text-white"
-                        : status === "gagal"
+                        : status === "Gagal"
                             ? "bg-[#D31A1D] text-white"
-                            : status === "pending"
+                            : status === "Pending"
                                 ? "bg-[#E9B03C] text-white"
                                 : "bg-gray-100 text-gray-800"
                         }`}>
@@ -99,11 +92,11 @@ export const columns: ColumnDef<Booking>[] = [
             const status = row.getValue("status_booking") as string
             return (
                 <div>
-                    <span className={`flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize ${status === "selesai"
+                    <span className={`flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize ${status === "Aktif"
                         ? "bg-[#009B4F] text-white"
-                        : status === "dibatalkan"
+                        : status === "Dibatalkan"
                             ? "bg-[#D31A1D] text-white"
-                            : status === "aktif"
+                            : status === "Selesai"
                                 ? "bg-[#E9B03C] text-white"
                                 : "bg-gray-100 text-gray-800"
                         }`}>
@@ -113,4 +106,13 @@ export const columns: ColumnDef<Booking>[] = [
             )
         }
     },
+    {
+        accessorKey: "Aksi",
+        header: "Aksi",
+        cell: ({ row }) => {
+            return <div>
+                <EditBooking row={row} />
+            </div>
+        }
+    }
 ]

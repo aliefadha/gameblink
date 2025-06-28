@@ -3,7 +3,14 @@ import type { User } from "@/types/User";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const login = async (credentials: { email: string; password: string }) => {
+type LoginResponse = {
+    access_token: string;
+    user: User;
+};
+
+export const login = async (
+    credentials: { email: string; password: string }
+): Promise<LoginResponse> => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -17,7 +24,7 @@ export const login = async (credentials: { email: string; password: string }) =>
         throw new Error(errorData.message || 'Login failed');
     }
 
-    const result: ApiResponse<User> = await response.json()
+    const result: ApiResponse<LoginResponse> = await response.json();
 
     return result.data;
 };
@@ -46,4 +53,18 @@ export const logout = async (): Promise<void> => {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Server-side logout failed');
     }
+};
+
+export const getProfile = async (token: string): Promise<User> => {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+        },
+    });
+    if (!response.ok) {
+        throw new Error('Failed to fetch profile');
+    }
+    const result: ApiResponse<User> = await response.json();
+    return result.data;
 };

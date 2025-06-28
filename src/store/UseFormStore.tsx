@@ -22,6 +22,7 @@ export type StepThreeData = {
         unit_id: string,
         jam_main: string,
         harga: number,
+        tanggal: string,
     }[],
 }
 

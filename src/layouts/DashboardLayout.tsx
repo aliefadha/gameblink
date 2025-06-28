@@ -28,6 +28,18 @@ const menuItems = [
 
 function DashboardLayout() {
     const { user, logout } = useAuth();
+    // Filter menu items based on user role
+    const filteredMenuItems = menuItems.filter(item => {
+        if (user?.role === 'ADMIN') {
+            // ADMIN only sees booking and daftar-booking
+            return [
+                '/dashboard/booking',
+                '/dashboard/daftar-booking'
+            ].includes(item.to);
+        }
+        // SUPERADMIN sees all
+        return true;
+    });
     return (
         <SidebarProvider>
             <div className="flex max-h-screen flex-1 overflow-hidden">
@@ -39,7 +51,7 @@ function DashboardLayout() {
                     </SidebarHeader>
                     <SidebarContent className="flex flex-col gap-y-0.5 text-xs flex-1 py-0">
                         <SidebarMenu>
-                            {menuItems.map((item) => (
+                            {filteredMenuItems.map((item) => (
                                 <SidebarMenuItem key={item.to}>
                                     <NavLink to={item.to} className={({ isActive }) => isActive ? 'flex gap-x-3 items-center font-bold mx-3 p-3 rounded-lg bg-white text-[#61368E]' : 'flex gap-x-3 items-center text-white mx-3 p-3 rounded-lg  hover:bg-white hover:text-[#61368E]'} end>
                                         <item.icon size={20} />
@@ -52,7 +64,7 @@ function DashboardLayout() {
                     <SidebarFooter>
                         <button
                             onClick={logout}
-                            className="flex w-full text-left gap-x-3 items-center text-white mx-3 p-3 rounded-lg hover:bg-white hover:text-[#61368E]"
+                            className="flex w-full text-left gap-x-3 items-center text-white mx-3 p-3 rounded-lg hover:text-zinc-700"
                         >
                             <BiLogOut size={20} />
                             <span>Keluar</span>
