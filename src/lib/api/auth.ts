@@ -11,7 +11,7 @@ type LoginResponse = {
 export const login = async (
     credentials: { email: string; password: string }
 ): Promise<LoginResponse> => {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         body: JSON.stringify(credentials),
     });
@@ -41,7 +41,7 @@ export const logout = async (): Promise<void> => {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}/logout`, {
+    const response = await fetch(`${API_BASE_URL}/auth/logout`, {
         method: 'POST',
         headers: headers,
     });
@@ -53,7 +53,7 @@ export const logout = async (): Promise<void> => {
 };
 
 export const getProfile = async (token: string): Promise<User> => {
-    const response = await fetch(`${API_BASE_URL}/me`, {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`,
