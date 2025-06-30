@@ -87,66 +87,30 @@ function DaftarBooking() {
 
     const isUnitBlocked = (unitName: string, time: string, date: Date): boolean => {
         if (!ketersediaans) return false;
-        
         const dateStr = format(date, 'yyyy-MM-dd');
-        
         return ketersediaans.some((ketersediaan: Ketersediaan) => {
             if (ketersediaan.nama_unit !== unitName || ketersediaan.nama_cabang !== cabang?.nama_cabang) {
                 return false;
             }
-            
-            if (ketersediaan.status_perbaikan !== "Selesai" && ketersediaan.status_perbaikan !== "Pending") {
-                return false;
-            }
-            
+
             const startDate = format(new Date(ketersediaan.tanggal_mulai_blokir), 'yyyy-MM-dd');
-            const endDate = ketersediaan.tanggal_selesai_blokir ? format(new Date(ketersediaan.tanggal_selesai_blokir), 'yyyy-MM-dd') : null;
-            
-            if (dateStr < startDate) {
-                return false;
-            }
-            
             const currentTime = parseInt(time.replace('.00', ''));
             const startTime = parseInt(ketersediaan.jam_mulai_blokir.replace('.00', ''));
-            
-            // If we're on the start date, check if current time is after jam_mulai_blokir
-            if (dateStr === startDate && currentTime < startTime) {
+
+            // If date is before start, not blocked
+            if (dateStr < startDate) return false;
+
+            // Pending: block from start date/time onwards, no end
+            if (ketersediaan.status_perbaikan === "Pending") {
+                if (dateStr > startDate) return true;
+                if (dateStr === startDate && currentTime >= startTime) return true;
                 return false;
             }
-            
-            // For Pending status: block from start date and time onwards (no end time)
-            if (ketersediaan.status_perbaikan === "Pending") {
-                return true;
-            }
-            
-            // For Selesai status: check end date and time constraints
+
+            // Selesai: do not block anything
             if (ketersediaan.status_perbaikan === "Selesai") {
-                if (endDate && dateStr > endDate) {
-                    return false;
-                }
-                
-                const endTime = ketersediaan.jam_selesai_blokir ? parseInt(ketersediaan.jam_selesai_blokir.replace('.00', '')) : null;
-                
-                // If we're on the end date, check if current time is before jam_selesai_blokir
-                if (endDate && dateStr === endDate && endTime && currentTime > endTime) {
-                    return false;
-                }
-                
-                // For dates in between, block all times
-                if (dateStr > startDate && (!endDate || dateStr < endDate)) {
-                    return true;
-                }
-                
-                // For start and end dates, check if time is within the blocking range
-                if (dateStr === startDate || (endDate && dateStr === endDate)) {
-                    if (endTime) {
-                        return currentTime >= startTime && currentTime <= endTime;
-                    } else {
-                        return currentTime >= startTime;
-                    }
-                }
+                return false;
             }
-            
             return false;
         });
     };

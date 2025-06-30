@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://staging-gameblink.metro-software.com",
   "proxy": "https://staging-api-gameblink.metro-software.com",
   "scripts": {
     "dev": "vite",
