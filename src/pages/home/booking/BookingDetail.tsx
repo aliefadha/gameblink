@@ -47,27 +47,7 @@ function BookingDetail() {
       const response = await createBooking(bookingData);
       
       if (response.message === "Success") {
-        (window as any).snap.pay(response.data.token, {
-          onSuccess: function(result: any){
-            localStorage.setItem('paymentResult', JSON.stringify(result));
-            localStorage.setItem('paymentStatus', 'success');
-            alert("payment success!"); console.log(result);
-          },
-          onPending: function(result: any){
-            localStorage.setItem('paymentResult', JSON.stringify(result));
-            localStorage.setItem('paymentStatus', 'pending');
-            alert("wating your payment!"); console.log(result);
-          },
-          onError: function(result: any){
-            localStorage.setItem('paymentResult', JSON.stringify(result));
-            localStorage.setItem('paymentStatus', 'error');
-            alert("payment failed!"); console.log(result);
-          },
-          onClose: function(){
-            localStorage.setItem('paymentStatus', 'closed');
-            alert('you closed the popup without finishing the payment');
-          }
-        });
+        (window as any).snap.pay(response.data.token);
         return;
       } else {
         setError(response.message || 'Gagal membuat booking');

@@ -20,7 +20,6 @@ const queryClient = new QueryClient();
 
 enableMocking().then(() => {
   createRoot(document.getElementById('root')!).render(
-    <StrictMode>
       <BrowserRouter>
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
@@ -28,6 +27,5 @@ enableMocking().then(() => {
           </QueryClientProvider>
         </AuthProvider>
       </BrowserRouter>
-    </StrictMode>
   );
 });
