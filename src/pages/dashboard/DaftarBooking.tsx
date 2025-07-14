@@ -277,7 +277,7 @@ function DaftarBooking() {
                             </div>
                             <div className="flex gap-x-2 items-center">
                                 <div className="h-[15px] w-[15px] bg-[#D31A1D] rounded-full"></div>
-                                <p>Dipesan</p>
+                                <p>Terisi</p>
                             </div>
                             <div className="flex gap-x-2 items-center">
                                 <div className="h-[15px] w-[15px] bg-[#009B4F] rounded-full"></div>

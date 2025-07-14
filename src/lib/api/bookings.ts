@@ -8,29 +8,29 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export const getBookings = async (date?: string, type?: string): Promise<Booking[]> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
-    
+
     if (date) {
         params.append('tanggal_main', date);
     }
     if (type && type !== 'all') {
         params.append('type', type);
     }
-    
+
     if (params.toString()) {
         fullUrl += `?${params.toString()}`;
     }
-    
+
     console.log('API URL:', fullUrl); // Debug logging
-    
+
     const response = await fetch(fullUrl);
-    
+
     if (!response.ok) {
         throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
-    
+
     const apiResponse: PaginatedApiResponse<Booking> = await response.json();
     console.log('API Response:', apiResponse); // Debug logging
-    
+
     // Return the booking data array from the paginated response
     return apiResponse.data.data;
 };
@@ -39,24 +39,24 @@ export const getBookings = async (date?: string, type?: string): Promise<Booking
 export const getBookingsWithMeta = async (date?: string, type?: string): Promise<PaginatedApiResponse<Booking>> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
-    
+
     if (date) {
         params.append('tanggal_main', date);
     }
     if (type && type !== 'all') {
         params.append('type', type);
     }
-    
+
     if (params.toString()) {
         fullUrl += `?${params.toString()}`;
     }
-    
+
     const response = await fetch(fullUrl);
-    
+
     if (!response.ok) {
         throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
-    
+
     const apiResponse: PaginatedApiResponse<Booking> = await response.json();
     return apiResponse;
 }
@@ -140,6 +140,7 @@ export const transformFormDataToBookingRequest = (
         status_booking: "TidakAktif",
         booking_details: bookingDetails,
         booking_type: stepThree.booking_type,
+        payment_type: stepThree.payment_type,
     };
 };
 
