@@ -8,19 +8,20 @@ import { useState } from "react";
 import { format, addDays, isSameDay } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import {
-  Drawer,
-  DrawerTrigger,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerDescription,
-  DrawerClose,
+    Drawer,
+    DrawerTrigger,
+    DrawerContent,
+    DrawerHeader,
+    DrawerTitle,
+    DrawerDescription,
+    DrawerClose,
 } from "@/components/ui/drawer";
+
 import { useNavigate } from "react-router";
 import type { Ketersediaan } from "@/types/Ketersediaan";
 
 function BookingJadwal() {
-    const {stepTwo, setData} = useFormStore();
+    const { stepTwo, setData } = useFormStore();
     const navigate = useNavigate();
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [selectedSlots, setSelectedSlots] = useState<{ unitId: string; nama_unit: string; jenis_konsol: string; jam: string, harga: number, tanggal: string }[]>([]);
@@ -98,10 +99,10 @@ function BookingJadwal() {
     const totalHarga = selectedSlots.reduce((sum, slot) => sum + (slot.harga || 0), 0);
     const formatRupiah = (value: number) =>
         "Rp" + value.toLocaleString("id-ID");
-    
 
 
-    return(
+
+    return (
         <div className="p-5 max-w-[350px] md:max-w-xl lg:max-w-3xl mx-auto gap-y-6 flex flex-col overflow-y-auto pb-32">
             {stepTwo && (
                 <>
@@ -132,7 +133,7 @@ function BookingJadwal() {
                                 <span className="inline-block w-3 h-3 rounded-full bg-[#F6F4F4] border border-[#E5E5E5]"></span> Tersedia
                             </span>
                             <span className="flex items-center gap-1 text-sm text-[#888]">
-                                <span className="inline-block w-3 h-3 rounded-full bg-red-600"></span> Dipesan
+                                <span className="inline-block w-3 h-3 rounded-full bg-red-600"></span> Terisi
                             </span>
                             <span className="flex items-center gap-1 text-sm text-[#888]">
                                 <span className="inline-block w-3 h-3 rounded-full bg-green-600"></span> Aktif
@@ -142,6 +143,9 @@ function BookingJadwal() {
                             </span>
                         </div>
                     </div>
+
+
+
                     {(units ?? []).length > 0 && (
                         <div className="w-full overflow-x-auto">
                             <table className="min-w-max w-full border-collapse">
@@ -173,29 +177,29 @@ function BookingJadwal() {
                                                     nama_unit: unit.nama_unit,
                                                     jenis_konsol: unit.jenis_konsol,
                                                     harga: unit.harga,
-                                                    tanggal: selectedDate.toISOString(),
+                                                    tanggal: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
                                                 };
-                                                
+
                                                 const isSelected = selectedSlots.some(
                                                     (slot) =>
                                                         slot.unitId === unit.id &&
                                                         slot.jam === time &&
-                                                        slot.tanggal === selectedDate.toISOString()
+                                                        slot.tanggal === format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z'
                                                 );
-                                                
+
                                                 const isBooked = (bookings ?? []).some((booking: import("@/types/Booking").Booking) =>
                                                     booking.booking_details?.some((detail: import("@/types/Booking").BookingDetail) =>
                                                         detail.unit_id === unit.id &&
                                                         detail.jam_main === time &&
-                                                        format(new Date(detail.tanggal), 'yyyy-MM-dd') === format(selectedDate, 'yyyy-MM-dd')
+                                                        new Date(detail.tanggal).toDateString() === selectedDate.toDateString()
                                                     )
                                                 );
-                                                
+
                                                 const isBlocked = isUnitBlocked(unit.nama_unit, time, selectedDate);
-                                                
+
                                                 let buttonClass = "bg-[#F8F5F5] hover:bg-gray-200";
                                                 let isDisabled = false;
-                                                
+
                                                 if (isBooked) {
                                                     buttonClass = "bg-[#D31A1D] text-white hover:bg-[#D31A1D] disable:bg-[#D31A1D] disabled:cursor-not-allowed";
                                                     isDisabled = true;
@@ -205,7 +209,7 @@ function BookingJadwal() {
                                                 } else if (isSelected) {
                                                     buttonClass = "bg-green-500 text-white hover:bg-green-600";
                                                 }
-                                                
+
                                                 return (
                                                     <td key={`${time}-${unit.id}`} className="text-center p-2">
                                                         <Button
@@ -222,7 +226,7 @@ function BookingJadwal() {
                                                                                 !(
                                                                                     slot.unitId === unit.id &&
                                                                                     slot.jam === time
-                                                                                    && slot.tanggal === selectedDate.toISOString()
+                                                                                    && slot.tanggal === format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z'
                                                                                 )
                                                                         );
                                                                     } else {
@@ -273,7 +277,7 @@ function BookingJadwal() {
                             setData({
                                 step: 3,
                                 data: {
-                                    tanggal_main: selectedDate.toISOString(),
+                                    tanggal_main: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
                                     total_harga: totalHarga,
                                     booking_detail: selectedSlots.map(slot => ({
                                         unit_id: slot.unitId,
@@ -281,8 +285,10 @@ function BookingJadwal() {
                                         harga: slot.harga,
                                         nama_unit: slot.nama_unit,
                                         jenis_konsol: slot.jenis_konsol,
-                                        tanggal: selectedDate.toISOString(),
+                                        tanggal: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
                                     })),
+                                    booking_type: 'Online',
+                                    payment_type: ''
                                 }
                             });
                             navigate('/booking/details');
