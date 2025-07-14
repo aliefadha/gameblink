@@ -30,7 +30,7 @@ export function BookingDetailsTable<TData, TValue>({
     })
 
     return (
-        <div className="w-full rounded-lg border">
+        <div className="w-full rounded-lg border overflow-x-scroll">
             <Table>
                 <TableHeader className="bg-[#61368E] rounded-t-lg">
                     {table.getHeaderGroups().map((headerGroup) => (

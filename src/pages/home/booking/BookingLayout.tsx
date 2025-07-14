@@ -50,7 +50,7 @@ function BookingLayout() {
     }, [currentStep, stepOne, stepTwo, stepThree, navigate]);
 
     return (
-        <div className="h-screen bg-[url('/images/bg-login.png')] bg-cover">
+        <div className="h-screen bg-[url('/images/bg-login.webp')] bg-cover">
             <div className="h-1/4 flex flex-col items-center justify-center gap-y-6 relative">
                 <div className="w-full flex items-center justify-center relative">
                     {location.pathname !== "/booking" && (
@@ -64,7 +64,7 @@ function BookingLayout() {
                     )}
                     <img src="/images/logo.svg" alt="logo" className="mx-auto w-[125px] h-auto" />
                 </div>
-                <h1 className="text-4xl text-white font-bold font-nebula text-center">
+                <h1 className="text-4xl text-white font-bold text-center" style={{ fontFamily: "Nebula" }}>
                     {location.pathname === "/booking/details"
                         ? "BOOKING SUMMARY"
                         : location.pathname === "/booking/jadwal" && stepTwo?.nama_cabang

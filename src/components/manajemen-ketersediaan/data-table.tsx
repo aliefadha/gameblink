@@ -39,7 +39,7 @@ export function DataTable<TData, TValue>({
                                 return (
                                     <TableHead
                                         key={header.id}
-                                        className="text-center sm:text-left"
+                                        className="text-center"
                                         style={{
                                             minWidth: header.column.columnDef.size,
                                             maxWidth: header.column.columnDef.size,

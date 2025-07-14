@@ -6,6 +6,7 @@ export interface BookingDetail {
     harga: number;
     tanggal: string;
     nama_unit: string;
+    status_booking_detail: string;
 }
 
 export interface Booking {
@@ -23,10 +24,8 @@ export interface Booking {
     status_booking: string;
     booking_details: BookingDetail[];
     nama_cabang?: string;
-    // Old fields for backward compatibility
     cabang?: string;
-    unit?: string;
-    jam_main?: string;
+    booking_type: string;
 }
 
 export interface CreateBookingRequest {
@@ -38,6 +37,7 @@ export interface CreateBookingRequest {
     tanggal_transaksi: string;
     total_harga: number;
     status_booking: string;
+    booking_type: string;
     booking_details: {
         unit_id: string;
         jam_main: string;

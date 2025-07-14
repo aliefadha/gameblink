@@ -39,12 +39,12 @@ function EditKetersediaanDialog({ ketersediaan }: EditKetersediaanDialogProps) {
             jam_mulai_blokir: ketersediaan.jam_mulai_blokir || "",
             tanggal_selesai_blokir: ketersediaan.tanggal_selesai_blokir || "",
             jam_selesai_blokir: ketersediaan.jam_selesai_blokir || "",
-            status_perbaikan: ketersediaan.status_perbaikan || "Pending",
+            status_perbaikan: "Selesai",
         },
     });
 
     const mutation = useMutation({
-        mutationFn: (payload: UpdateKetersediaanPayload) => 
+        mutationFn: (payload: UpdateKetersediaanPayload) =>
             updateKetersediaan(ketersediaan.id_ketersediaan, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['ketersediaans'] });
@@ -83,10 +83,10 @@ function EditKetersediaanDialog({ ketersediaan }: EditKetersediaanDialogProps) {
                                     <FormLabel className="col-span-2 text-[#6C6C6C]">Tanggal Mulai</FormLabel>
                                     <div className="col-span-4 col-start-3 w-full">
                                         <FormControl>
-                                            <Input 
-                                                value={field.value ? new Date(field.value).toLocaleDateString() : ""} 
-                                                className="bg-[#F8F5F5] rounded-sm" 
-                                                readOnly 
+                                            <Input
+                                                value={field.value ? new Date(field.value).toLocaleDateString() : ""}
+                                                className="bg-[#F8F5F5] rounded-sm"
+                                                readOnly
                                                 disabled
                                             />
                                         </FormControl>
@@ -103,10 +103,10 @@ function EditKetersediaanDialog({ ketersediaan }: EditKetersediaanDialogProps) {
                                     <FormLabel className="text-[#6C6C6C] col-span-2">Jam Mulai</FormLabel>
                                     <div className="col-span-4 col-start-3 w-full">
                                         <FormControl>
-                                            <Input 
-                                                value={field.value} 
-                                                className="bg-[#F8F5F5] rounded-sm" 
-                                                readOnly 
+                                            <Input
+                                                value={field.value}
+                                                className="bg-[#F8F5F5] rounded-sm"
+                                                readOnly
                                                 disabled
                                             />
                                         </FormControl>
@@ -169,14 +169,13 @@ function EditKetersediaanDialog({ ketersediaan }: EditKetersediaanDialogProps) {
                                 <FormItem className="grid grid-cols-6 items-center gap-2">
                                     <FormLabel className="text-[#6C6C6C] col-span-2">Status Perbaikan</FormLabel>
                                     <div className="col-span-4 col-start-3 w-full">
-                                        <Select onValueChange={field.onChange} value={field.value}>
+                                        <Select onValueChange={field.onChange} defaultValue="Selesai" disabled>
                                             <FormControl>
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Pilih status" />
+                                                <SelectTrigger disabled>
+                                                    <SelectValue placeholder="Selesai" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="Pending">Pending</SelectItem>
                                                 <SelectItem value="Selesai">Selesai</SelectItem>
                                             </SelectContent>
                                         </Select>
@@ -198,4 +197,4 @@ function EditKetersediaanDialog({ ketersediaan }: EditKetersediaanDialogProps) {
     );
 }
 
-export default EditKetersediaanDialog; 
+export default EditKetersediaanDialog;

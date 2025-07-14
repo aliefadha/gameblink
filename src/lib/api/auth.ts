@@ -14,6 +14,9 @@ export const login = async (
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         body: JSON.stringify(credentials),
+        headers: {
+            'Content-Type': 'application/json',
+        },
     });
 
     if (!response.ok) {

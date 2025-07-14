@@ -48,6 +48,20 @@ export const columns: ColumnDef<Booking>[] = [
     {
         accessorKey: "metode_pembayaran",
         header: "Metode Pembayaran",
+        cell: ({ row }) => {
+            const metode = row.getValue("metode_pembayaran") as string
+            return <div>
+                <span className="flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize">
+                    {metode === "qris"
+                        ? "QRIS"
+                        : metode === "bank_transfer"
+                            ? "Transfer"
+                            : metode === "cash"
+                                ? "CASH"
+                                : "Transfer"}
+                </span>
+            </div>
+        }
     },
     {
         accessorKey: "total_harga",
@@ -98,20 +112,26 @@ export const columns: ColumnDef<Booking>[] = [
                             ? "bg-[#D31A1D] text-white"
                             : status === "Selesai"
                                 ? "bg-[#E9B03C] text-white"
-                                : "bg-gray-100 text-gray-800"
+                                : status === "TidakAktif"
+                                    ? "bg-[#6B7280] text-white"
+                                    : "bg-gray-100 text-gray-800"
                         }`}>
-                        {status}
+                        {status === "TidakAktif" ? "Tidak Aktif" : status}
                     </span>
                 </div>
             )
         }
     },
     {
+        accessorKey: "booking_type",
+        header: "Tipe Booking",
+    },
+    {
         accessorKey: "Aksi",
         header: "Aksi",
-        cell: ({ row }) => {
+        cell: ({ row, table }) => {
             return <div>
-                <EditBooking row={row} />
+                <EditBooking row={row} onRefetch={table.options.meta?.onRefetch} />
             </div>
         }
     }
