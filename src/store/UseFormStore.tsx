@@ -24,6 +24,7 @@ export type StepThreeData = {
         harga: number,
         tanggal: string,
     }[],
+    booking_type: string,
 }
 
 

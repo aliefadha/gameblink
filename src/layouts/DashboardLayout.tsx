@@ -28,16 +28,13 @@ const menuItems = [
 
 function DashboardLayout() {
     const { user, logout } = useAuth();
-    // Filter menu items based on user role
     const filteredMenuItems = menuItems.filter(item => {
         if (user?.role === 'ADMIN') {
-            // ADMIN only sees booking and daftar-booking
             return [
                 '/dashboard/booking',
                 '/dashboard/daftar-booking'
             ].includes(item.to);
         }
-        // SUPERADMIN sees all
         return true;
     });
     return (

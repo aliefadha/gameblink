@@ -1,6 +1,6 @@
 import type { Unit } from "@/types/Unit";
 import type { UnitFormData } from "../validations/unit.schema";
-import type { ApiResponse } from "@/types/Api";
+import type { SingleApiResponse } from "@/types/Api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -13,7 +13,7 @@ export const getUnits = async (): Promise<Unit[]> => {
         throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
 
-    const result: ApiResponse<Unit[]> = await response.json();
+    const result: SingleApiResponse<Unit[]> = await response.json();
 
     return result.data;
 };
@@ -28,7 +28,7 @@ export const getUnitsByCabang = async (id: string): Promise<Unit[]> => {
         throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
 
-    const result: ApiResponse<Unit[]> = await response.json();
+    const result: SingleApiResponse<Unit[]> = await response.json();
 
     return result.data;
 };
@@ -49,7 +49,8 @@ export const createUnit = async (unitData: UnitFormData): Promise<Unit> => {
         throw new Error(errorData.message || 'Gagal membuat unit baru');
     }
 
-    return response.json();
+    const result: SingleApiResponse<Unit> = await response.json();
+    return result.data;
 };
 
 export const deleteUnit = async (id: string): Promise<void> => {
@@ -77,7 +78,7 @@ export const getUnitByCabang = async (id: string): Promise<Unit[]> => {
         throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
 
-    const result: ApiResponse<Unit[]> = await response.json();
+    const result: SingleApiResponse<Unit[]> = await response.json();
 
     return result.data;
 };

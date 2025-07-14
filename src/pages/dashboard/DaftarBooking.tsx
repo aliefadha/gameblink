@@ -1,5 +1,5 @@
 import { getCabangs } from "@/lib/api/cabangs"
-import { getBookings } from "@/lib/api/bookings"
+import { createWalkinBooking, getBookings } from "@/lib/api/bookings"
 import { getKetersediaans } from "@/lib/api/ketersediaans"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
@@ -8,17 +8,29 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { Cabang } from "@/types/Cabang"
 import type { Ketersediaan } from "@/types/Ketersediaan"
-import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useState, useEffect } from "react"
 import { BiHomeAlt } from "react-icons/bi"
 import { IoFlagOutline } from "react-icons/io5"
 import { LuCalendarDays } from "react-icons/lu"
 import { MdKeyboardArrowDown } from "react-icons/md"
 import { getUnitsByCabang } from "@/lib/api/units"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { BookingDetailsTable } from "@/components/manajemen-booking/booking-details-table";
+import { bookingDetailsColumns } from "@/components/manajemen-booking/booking-details-columns";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FaGamepad } from "react-icons/fa";
+import { toast } from "sonner"
 
 function DaftarBooking() {
 
     const [cabang, setCabang] = useState<Cabang | null>(null);
+    const queryClient = useQueryClient();
 
     const { data: cabangs, isLoading: isLoadingCabang, error: cabangsError } = useQuery({
         queryKey: ['cabangs'],
@@ -52,7 +64,7 @@ function DaftarBooking() {
         enabled: !!cabang
     });
 
-    const timeSlots = Array.from({ length: 12 }, (_, i) => `${10 + i}.00`);
+    const timeSlots = Array.from({ length: 15 }, (_, i) => `${10 + i}.00`);
 
     const { data: bookings } = useQuery({
         queryKey: [
@@ -113,6 +125,85 @@ function DaftarBooking() {
             }
             return false;
         });
+    };
+
+    const [selectedCells, setSelectedCells] = useState<{ unitId: string, time: string }[]>([]);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    // Reset selectedCells when selectedDate changes
+    useEffect(() => {
+        setSelectedCells([]);
+    }, [selectedDate]);
+
+    const bookingSchema = z.object({
+        nama: z.string().min(3, { message: 'Nama minimal 3 karakter' }),
+        noHp: z.string().min(1, { message: 'Nomor HP harus diisi' }),
+        email: z.string({ message: 'Email harus diisi' }).email({ message: 'Email tidak valid' }),
+        metodePembayaran: z.enum(['QRIS', 'Cash'], { required_error: 'Metode pembayaran harus dipilih' }),
+    });
+    const form = useForm<z.infer<typeof bookingSchema>>({
+        resolver: zodResolver(bookingSchema),
+        defaultValues: {
+            nama: '',
+            noHp: '',
+            email: '',
+            metodePembayaran: 'QRIS',
+        },
+    });
+
+    const handleBookingSubmit = async (values: z.infer<typeof bookingSchema>) => {
+        if (!cabang || !selectedDate || selectedCells.length === 0) return;
+        setSubmitStatus('idle');
+        setSubmitError(null);
+        try {
+            const tanggal_main = format(selectedDate, 'yyyy-MM-dd');
+            const tanggal_transaksi = format(new Date(), 'yyyy-MM-dd');
+            const booking_details = selectedCells.map(cell => {
+                const unit = units?.find(u => u.id === cell.unitId);
+                return {
+                    unit_id: cell.unitId,
+                    jam_main: cell.time,
+                    harga: unit?.harga || 0,
+                    tanggal: format(selectedDate, 'yyyy-MM-dd'),
+                };
+            });
+            const total_harga = booking_details.reduce((sum, d) => sum + d.harga, 0);
+            const payload = {
+                nama: values.nama,
+                nomor_hp: values.noHp,
+                email: values.email,
+                cabang_id: cabang.id,
+                tanggal_main,
+                tanggal_transaksi,
+                total_harga,
+                status_booking: "Aktif",
+                booking_type: "Walkin",
+                booking_details,
+                metode_pembayaran: values.metodePembayaran,
+            };
+            await createWalkinBooking(payload);
+            await queryClient.invalidateQueries({
+                queryKey: [
+                    'bookings',
+                    cabang?.id,
+                    selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
+                ]
+            });
+            toast.success('Booking berhasil dibuat!');
+            setSubmitStatus('success');
+            setSelectedCells([]);
+            setDialogOpen(false);
+            form.reset();
+        } catch (err: unknown) {
+            setSubmitStatus('error');
+            if (err instanceof Error) {
+                setSubmitError(err.message);
+            } else {
+                setSubmitError('Gagal membuat booking');
+            }
+        }
     };
 
     return (
@@ -198,6 +289,19 @@ function DaftarBooking() {
                             </div>
                         </div>
                     </div>
+                    {selectedCells.length > 0 && (
+                        <div className="mt-4 flex justify-end">
+                            <Button variant="purple" onClick={() => {
+                                if (selectedCells.length > 0) {
+                                    setDialogOpen(true);
+                                } else {
+                                    toast.error('Pilih minimal satu slot waktu untuk booking');
+                                }
+                            }}>
+                                <FaGamepad size={16} />  ({selectedCells.length})
+                            </Button>
+                        </div>
+                    )}
                 </CardHeader>
                 <CardContent>
                     {(units ?? []).length > 0 && (
@@ -226,27 +330,52 @@ function DaftarBooking() {
                                             <td className="text-xs font-bold text-[#2F2F2F] p-2">{time}</td>
                                             {units?.map((unit) => {
                                                 const isBooked = (bookings ?? []).some((booking: import("@/types/Booking").Booking) =>
+                                                    booking.status_booking === "Aktif" &&
                                                     booking.booking_details?.some((detail: import("@/types/Booking").BookingDetail) =>
                                                         detail.unit_id === unit.id &&
                                                         detail.jam_main === time &&
                                                         format(new Date(detail.tanggal), 'yyyy-MM-dd') === (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '')
                                                     )
                                                 );
-                                                
+
                                                 const isBlocked = selectedDate ? isUnitBlocked(unit.nama_unit, time, selectedDate) : false;
-                                                
+
+                                                const isSelected = selectedCells.some(
+                                                    (cell) => cell.unitId === unit.id && cell.time === time
+                                                );
+
                                                 return (
                                                     <td key={`${time}-${unit.id}`} className="text-center p-2 w-[150px]">
                                                         <Button
-                                                            className={`w-full ${
-                                                                isBooked 
-                                                                    ? "bg-[#D31A1D] text-white hover:bg-[#D31A1D] cursor-not-allowed booked"
-                                                                    : isBlocked 
-                                                                    ? "bg-gray-600 text-white hover:bg-gray-600 cursor-not-allowed blocked" 
-                                                                    : "bg-[#F8F5F5] hover:bg-gray-200"
-                                                            }`}
+                                                            className={`w-full ${isBooked
+                                                                ? "bg-[#D31A1D] text-white hover:bg-[#D31A1D] cursor-not-allowed booked"
+                                                                : isBlocked
+                                                                    ? "bg-gray-600 text-white hover:bg-gray-600 cursor-not-allowed blocked"
+                                                                    : isSelected
+                                                                        ? "bg-[#009B4F] hover:bg-green-700 text-white"
+                                                                        : "bg-[#F8F5F5] hover:bg-gray-200"
+                                                                }`}
                                                             size="sm"
+                                                            disabled={isBooked || isBlocked}
+                                                            onClick={() => {
+                                                                if (isBooked || isBlocked) return;
+                                                                setSelectedCells((prev) => {
+                                                                    const exists = prev.some(
+                                                                        (cell) => cell.unitId === unit.id && cell.time === time
+                                                                    );
+                                                                    if (exists) {
+                                                                        // Remove from selection
+                                                                        return prev.filter(
+                                                                            (cell) => !(cell.unitId === unit.id && cell.time === time)
+                                                                        );
+                                                                    } else {
+                                                                        // Add to selection
+                                                                        return [...prev, { unitId: unit.id, time }];
+                                                                    }
+                                                                });
+                                                            }}
                                                         >
+                                                            {isSelected ? "✓" : ""}
                                                         </Button>
                                                     </td>
                                                 );
@@ -274,6 +403,113 @@ function DaftarBooking() {
                     )}
                 </CardContent>
             </Card>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogContent className="w-full overflow-x-auto p-4 sm:max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>Booking Unit</DialogTitle>
+                    </DialogHeader>
+                    <DialogDescription className="sr-only">
+                        Silakan isi form di bawah ini untuk membuat booking.
+                    </DialogDescription>
+                    <div className="max-h-[60vh] overflow-y-auto pr-2">
+                        <Form {...form}>
+                            <form onSubmit={form.handleSubmit(handleBookingSubmit)} className="space-y-4 mt-4 w-full">
+                                <FormField
+                                    control={form.control}
+                                    name="nama"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Nama</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Nama Kamu" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="noHp"
+                                    render={({ field }) => (
+                                        <FormItem className="">
+                                            <FormLabel>No HP</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="No HP" {...field} inputMode="tel" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem >
+                                            <FormLabel>Email</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="Email" {...field} inputMode="email" />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                {/* Metode Pembayaran */}
+                                <FormField
+                                    control={form.control}
+                                    name="metodePembayaran"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Metode Pembayaran</FormLabel>
+                                            <FormControl>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Pilih metode pembayaran" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="QRIS">QRIS</SelectItem>
+                                                        <SelectItem value="Cash">Cash</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <div className="mt-6 w-full overflow-x-auto">
+                                    <div className="text-sm font-medium mb-3 text-[#61368E]">Detail Unit yang Dipesan</div>
+                                    <BookingDetailsTable
+                                        columns={bookingDetailsColumns}
+                                        data={selectedCells.map((cell) => {
+                                            const unitObj = units?.find((u) => u.id === cell.unitId);
+                                            return {
+                                                id: cell.unitId + '-' + cell.time,
+                                                booking_id: '',
+                                                unit_id: cell.unitId,
+                                                jam_main: cell.time,
+                                                harga: unitObj?.harga || 0,
+                                                tanggal: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+                                                nama_unit: unitObj?.nama_unit || '',
+                                                status_booking_detail: '',
+                                            };
+                                        })}
+                                    />
+                                </div>
+                                {submitStatus === 'error' && (
+                                    <div className="text-red-600 text-sm">{submitError}</div>
+                                )}
+                                <div className="flex gap-2 pt-4 justify-end">
+                                    <Button type="submit" variant="purple" disabled={form.formState.isSubmitting}>
+                                        {form.formState.isSubmitting ? 'Menyimpan...' : 'Buat Booking'}
+                                    </Button>
+                                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                                        Tutup
+                                    </Button>
+                                </div>
+                            </form>
+                        </Form>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

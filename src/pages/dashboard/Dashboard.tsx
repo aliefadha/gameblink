@@ -10,12 +10,14 @@ import { Button } from "@/components/ui/button"
 import { MdKeyboardArrowDown } from "react-icons/md"
 import { Calendar } from "@/components/ui/calendar"
 import { LuCalendarDays } from "react-icons/lu"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { DateRange } from "react-day-picker"
 import { useQuery } from "@tanstack/react-query"
 import { getCabangs } from "@/lib/api/cabangs"
 import type { Cabang } from "@/types/Cabang"
 import { getDashboard, getChartData, type Dashboard } from "@/lib/api/dashboard"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "sonner"
 
 function DashboardPage() {
 
@@ -25,6 +27,9 @@ function DashboardPage() {
         queryFn: getCabangs,
     });
 
+    const isLoadingCabang = isLoading;
+    const cabangsError = error;
+
     const { data: dashboard, isLoading: isLoadingDashboard, error: errorDashboard } = useQuery<Dashboard>({
         queryKey: ['dashboard'],
         queryFn: getDashboard,
@@ -32,7 +37,6 @@ function DashboardPage() {
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
 
-    // Chart data query
     const { data: chartData, isLoading: isLoadingChart } = useQuery({
         queryKey: ['chartData', cabang?.id, dateRange?.from, dateRange?.to],
         queryFn: () => {
@@ -46,20 +50,30 @@ function DashboardPage() {
         enabled: !!(cabang?.id && dateRange?.from && dateRange?.to),
     });
 
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
+    useEffect(() => {
+        if (!cabang && cabangs && cabangs.length > 0) {
+            setCabang(cabangs[0]);
+        }
+    }, [cabangs, cabang]);
+
+    // Set default dateRange: from 6 days before today to today
+    useEffect(() => {
+        if (!dateRange) {
+            const today = new Date();
+            const from = new Date();
+            from.setDate(today.getDate() - 6);
+            setDateRange({ from, to: today });
+        }
+    }, [dateRange]);
 
     if (error) {
-        return <div>Error</div>;
-    }
-
-    if (isLoadingDashboard) {
-        return <div>Loading...</div>;
+        console.log(error);
+        toast.error("Gagal memuat data cabang");
     }
 
     if (errorDashboard) {
-        return <div>Error</div>;
+        console.log(errorDashboard);
+        toast.error("Gagal memuat data dashboard");
     }
 
     return (
@@ -71,7 +85,6 @@ function DashboardPage() {
                 </h1>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-                {/* Card 1: Booking Hari Ini */}
                 <Card className="w-full bg-[#61368E]">
                     <CardHeader className="pb-2">
                         <CardTitle>
@@ -82,9 +95,13 @@ function DashboardPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        <h1 className="text-2xl sm:text-3xl lg:text-2xl xl:text-3xl text-white font-bold">
-                            {dashboard?.countBookingToday|| 0}
-                        </h1>
+                        {isLoadingDashboard ? (
+                            <Skeleton className="h-8 w-24 bg-[#7e57c2]" />
+                        ) : (
+                            <h1 className="text-2xl sm:text-3xl lg:text-2xl xl:text-3xl text-white font-bold">
+                                {dashboard?.countBookingToday|| 0}
+                            </h1>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -99,9 +116,13 @@ function DashboardPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        <h1 className="text-2xl sm:text-3xl lg:text-2xl xl:text-3xl text-white font-bold">
-                            {dashboard?.available || 0}
-                        </h1>
+                        {isLoadingDashboard ? (
+                            <Skeleton className="h-8 w-24 bg-[#7e57c2]" />
+                        ) : (
+                            <h1 className="text-2xl sm:text-3xl lg:text-2xl xl:text-3xl text-white font-bold">
+                                {dashboard?.available || 0}
+                            </h1>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -116,14 +137,18 @@ function DashboardPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        <h1 className="text-lg sm:text-xl lg:text-lg xl:text-xl text-white font-bold">
-                            {new Intl.NumberFormat("id-ID", {
-                                style: "currency",
-                                currency: "IDR",
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0
-                            }).format(parseFloat(dashboard?.revenueToday.toString() || "0"))}
-                        </h1>
+                        {isLoadingDashboard ? (
+                            <Skeleton className="h-7 w-32 bg-[#7e57c2]" />
+                        ) : (
+                            <h1 className="text-lg sm:text-xl lg:text-lg xl:text-xl text-white font-bold">
+                                {new Intl.NumberFormat("id-ID", {
+                                    style: "currency",
+                                    currency: "IDR",
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0
+                                }).format(parseFloat(dashboard?.revenueToday.toString() || "0"))}
+                            </h1>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -138,9 +163,13 @@ function DashboardPage() {
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                        <h1 className="text-lg sm:text-xl lg:text-lg xl:text-xl text-white font-bold">
-                            {dashboard?.bestCabang || "Tidak ada data"}
-                        </h1>
+                        {isLoadingDashboard ? (
+                            <Skeleton className="h-7 w-32 bg-[#7e57c2]" />
+                        ) : (
+                            <h1 className="text-lg sm:text-xl lg:text-lg xl:text-xl text-white font-bold">
+                                {dashboard?.bestCabang || "Tidak ada data"}
+                            </h1>
+                        )}
                     </CardContent>
                 </Card>
             </div>
@@ -153,15 +182,17 @@ function DashboardPage() {
                             </h1>
                             <div className="flex flex-col sm:flex-row gap-2 sm:gap-x-2 justify-end w-full lg:w-auto">
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild className="w-full sm:w-auto" disabled={!cabangs || cabangs.length === 0}>
-                                        <Button variant="purple" className="w-full sm:w-auto min-w-[140px]">
+                                    <DropdownMenuTrigger asChild className="w-full sm:w-auto" disabled={isLoadingCabang || !!cabangsError || !cabangs || cabangs.length === 0}>
+                                        <Button variant="purple" className="w-full sm:w-auto min-w-[140px]" disabled={isLoadingCabang || !!cabangsError || !cabangs || cabangs.length === 0}>
                                             <div className="flex items-center justify-between w-full">
                                                 <div className="flex items-center gap-x-2">
                                                     <BiHomeAlt size={16} />
                                                     <span className="font-semibold truncate">
-                                                        {cabangs && cabangs.length > 0
-                                                            ? cabang?.nama_cabang || "Pilih Cabang"
-                                                            : "Tidak Ada Cabang"
+                                                        {isLoadingCabang ? "Memuat cabang..."
+                                                            : cabangsError ? "Gagal memuat cabang"
+                                                            : cabangs && cabangs.length > 0
+                                                                ? cabang?.nama_cabang || "Pilih Cabang"
+                                                                : "Tidak Ada Cabang"
                                                         }
                                                     </span>
                                                 </div>
@@ -172,16 +203,17 @@ function DashboardPage() {
                                     <DropdownMenuContent className="w-[calc(100vw-2rem)] sm:w-64" align="center">
                                         <DropdownMenuLabel>Cabang</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
-                                        {cabangs && cabangs.length > 0 ? (
+                                        {isLoadingCabang && <DropdownMenuItem disabled>Memuat cabang...</DropdownMenuItem>}
+                                        {cabangsError && <DropdownMenuItem disabled className="text-red-600">Gagal memuat cabang</DropdownMenuItem>}
+                                        {!isLoadingCabang && !cabangsError && (!cabangs || cabangs.length === 0) && (
+                                            <DropdownMenuItem disabled>Tidak ada cabang ditemukan</DropdownMenuItem>
+                                        )}
+                                        {cabangs && cabangs.length > 0 && !isLoadingCabang && !cabangsError && (
                                             cabangs.map((cabang) => (
                                                 <DropdownMenuItem key={cabang.id} onClick={() => setCabang(cabang)}>
                                                     {cabang.nama_cabang}
                                                 </DropdownMenuItem>
                                             ))
-                                        ) : (
-                                            <DropdownMenuItem disabled>
-                                                Tidak ada cabang tersedia
-                                            </DropdownMenuItem>
                                         )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>

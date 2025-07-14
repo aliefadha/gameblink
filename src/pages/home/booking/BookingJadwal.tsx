@@ -43,7 +43,7 @@ function BookingJadwal() {
         queryFn: async () => {
             if (!cabangId || !selectedDate) return [];
             const allBookings = await getBookings(format(selectedDate, 'yyyy-MM-dd'));
-            return allBookings.filter((b: import("@/types/Booking").Booking) => b.cabang_id === cabangId);
+            return allBookings.filter((b: import("@/types/Booking").Booking) => b.cabang_id === cabangId && b.status_booking === 'Aktif');
         },
         enabled: !!cabangId && !!selectedDate
     });
@@ -77,17 +77,14 @@ function BookingJadwal() {
             const currentTime = parseInt(time.replace('.00', ''));
             const startTime = parseInt(ketersediaan.jam_mulai_blokir.replace('.00', ''));
 
-            // If date is before start, not blocked
             if (dateStr < startDate) return false;
 
-            // Pending: block from start date/time onwards, no end
             if (ketersediaan.status_perbaikan === "Pending") {
                 if (dateStr > startDate) return true;
                 if (dateStr === startDate && currentTime >= startTime) return true;
                 return false;
             }
 
-            // Selesai: do not block anything
             if (ketersediaan.status_perbaikan === "Selesai") {
                 return false;
             }
@@ -121,8 +118,8 @@ function BookingJadwal() {
                                     className={`flex flex-col items-center px-4 py-2 rounded-2xl min-w-[64px] ${isActive ? 'bg-green-600 text-white' : 'bg-[#F6F4F4] text-[#222]'} transition-colors duration-150`}
                                     style={{ fontWeight: isActive ? 700 : 600 }}
                                 >
-                                    <span className="text-xs whitespace-pre" style={{ opacity: isActive ? 1 : 0.7 }}>{format(date, 'd MMM', { locale: localeId })}</span>
-                                    <span className="text-lg font-bold" style={{ opacity: isActive ? 1 : 0.9 }}>{hari[date.getDay()]}</span>
+                                    <span className="text-xs whitespace-pre uppercase lg:capitalize" style={{ opacity: isActive ? 1 : 0.7 }}>{format(date, 'd MMM', { locale: localeId })}</span>
+                                    <span className="text-lg font-bold uppercase lg:capitalize" style={{ opacity: isActive ? 1 : 0.9 }}>{hari[date.getDay()]}</span>
                                 </button>
                             );
                         })}

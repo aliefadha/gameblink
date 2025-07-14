@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@/types/Api";
 import type { User } from "@/types/User";
 import { getToken } from "./auth";
-import type { UserFormData } from "../validations/user.schema";
+import type { UserFormData, EditUserFormData } from "../validations/user.schema";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -34,6 +34,28 @@ export const getUsers = async (): Promise<User[]> => {
 
     return result.data;
 }
+
+export const editUser = async (id: string, userData: EditUserFormData): Promise<User> => {
+    const fullUrl = `${API_BASE_URL}/user/${id}`;
+    const token = getToken();
+
+    const response = await fetch(fullUrl, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Gagal mengedit user');
+    }
+
+    const result: ApiResponse<User> = await response.json();
+    return result.data;
+};
 
 export const deleteUser = async (id: string): Promise<void> => {
     const fullUrl = `${API_BASE_URL}/user/${id}`;
@@ -81,6 +103,7 @@ export const createUser = async (userData: UserFormData): Promise<User> => {
         throw new Error(errorData.message || 'Gagal membuat user baru');
     }
 
-    return response.json();
+    const result: ApiResponse<User> = await response.json();
+    return result.data;
 };
 

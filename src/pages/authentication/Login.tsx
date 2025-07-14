@@ -44,11 +44,11 @@ function Login() {
     }
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-[url('/images/bg-login.png')] bg-cover">
+        <div className="flex justify-center items-center min-h-screen bg-[url('/images/bg-login.webp')] bg-cover">
             <Card className="w-full max-w-[250px] md:max-w-xl lg:max-w-3xl py-20">
                 <CardHeader className="items-center text-center">
                     <div className="flex items-center">
-                        <img src="/images/logo-login.png" alt="logo" className="mx-auto w-[300px] h-[80px] object-cover" />
+                        <img src="/images/logo-login.webp" alt="logo" className="mx-auto w-[300px] h-[80px] object-cover" />
                     </div>
                 </CardHeader>
                 <CardContent className="max-w-[250px] md:max-w-lg lg:max-w-2xl w-full mx-auto">

@@ -30,7 +30,7 @@ export function AppRoutes() {
 
             {/* Booking flow routes - using the new BookingLayout */}
             <Route path="/booking/*" element={<BookingLayout />} />
-            <Route path="/booking/success" element={<BookingSuccess />} />
+            <Route path="/booking/selesai" element={<BookingSuccess />} />
             {/* ================================================== */}
             {/* PROTECTED ROUTES                    */}
             {/* ================================================== */}

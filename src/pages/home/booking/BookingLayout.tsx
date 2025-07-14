@@ -50,7 +50,7 @@ function BookingLayout() {
     }, [currentStep, stepOne, stepTwo, stepThree, navigate]);
 
     return (
-        <div className="h-screen bg-[url('/images/bg-login.png')] bg-cover">
+        <div className="h-screen bg-[url('/images/bg-login.webp')] bg-cover">
             <div className="h-1/4 flex flex-col items-center justify-center gap-y-6 relative">
                 <div className="w-full flex items-center justify-center relative">
                     {location.pathname !== "/booking" && (

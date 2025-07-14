@@ -39,7 +39,10 @@ function BookingCabang() {
         <div className="py-10 max-w-[350px] md:max-w-xl lg:max-w-3xl mx-auto gap-y-6 flex flex-col h-full">
             <h1 className="font-semibold md:text-xl lg:text-2xl">Pilih Cabang</h1>
             {isLoading ? (
-                <div className="text-center py-10">Loading...</div>
+                <div className="text-center py-10">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#61368E]"></div>
+                    <p className="mt-2 text-gray-600">Loading...</p>
+                </div>
             ) : (
                 <div className="space-y-5">
                     {cabangs && cabangs.filter(cabang => (cabang.status === 'Aktif' && cabang.jumlah_unit > 0)).length === 0 ? (
