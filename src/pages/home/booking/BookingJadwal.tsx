@@ -288,7 +288,7 @@ function BookingJadwal() {
                                         tanggal: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
                                     })),
                                     booking_type: 'Online',
-                                    payment_type: ''
+                                    metode_pembayaran: ''
                                 }
                             });
                             navigate('/booking/details');

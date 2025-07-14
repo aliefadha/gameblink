@@ -1,6 +1,7 @@
 import type { Booking } from "@/types/Booking"
 import { type ColumnDef } from "@tanstack/react-table"
 import { EditBooking } from "./EditBooking"
+import { format, parseISO } from "date-fns"
 
 export const columns: ColumnDef<Booking>[] = [
     {
@@ -27,22 +28,28 @@ export const columns: ColumnDef<Booking>[] = [
         accessorKey: "tanggal_main",
         header: "Tanggal Main",
         cell: ({ row }) => {
-            const date = new Date(row.getValue("tanggal_main"))
-            const day = date.getDate().toString().padStart(2, '0')
-            const month = (date.getMonth() + 1).toString().padStart(2, '0')
-            const year = date.getFullYear()
-            return `${day}-${month}-${year}`
+            const dateStr = row.getValue("tanggal_main") as string
+            try {
+                // Handle both 'yyyy-MM-dd' and ISO date formats
+                const date = dateStr.includes('T') ? parseISO(dateStr) : parseISO(dateStr + 'T00:00:00')
+                return format(date, 'dd-MM-yyyy')
+            } catch {
+                return dateStr
+            }
         }
     },
     {
         accessorKey: "tanggal_transaksi",
         header: "Tanggal Transaksi",
         cell: ({ row }) => {
-            const date = new Date(row.getValue("tanggal_transaksi"))
-            const day = date.getDate().toString().padStart(2, '0')
-            const month = (date.getMonth() + 1).toString().padStart(2, '0')
-            const year = date.getFullYear()
-            return `${day}-${month}-${year}`
+            const dateStr = row.getValue("tanggal_transaksi") as string
+            try {
+                // Handle both 'yyyy-MM-dd' and ISO date formats
+                const date = dateStr.includes('T') ? parseISO(dateStr) : parseISO(dateStr + 'T00:00:00')
+                return format(date, 'dd-MM-yyyy')
+            } catch {
+                return dateStr
+            }
         }
     },
     {
@@ -131,7 +138,7 @@ export const columns: ColumnDef<Booking>[] = [
         header: "Aksi",
         cell: ({ row, table }) => {
             return <div>
-                <EditBooking row={row} onRefetch={table.options.meta?.onRefetch} />
+                <EditBooking row={row} onRefetch={(table.options.meta as any)?.onRefetch} />
             </div>
         }
     }

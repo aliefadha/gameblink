@@ -58,8 +58,7 @@ function BookingDetail() {
       // Update stepThree with the final total including service fee
       const updatedStepThree = {
         ...stepThree,
-        total_harga: totalBayar,
-        payment_type: paymentType
+        metode_pembayaran: paymentType
       };
 
       console.log(stepThree.total_harga)

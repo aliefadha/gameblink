@@ -140,7 +140,7 @@ export const transformFormDataToBookingRequest = (
         status_booking: "TidakAktif",
         booking_details: bookingDetails,
         booking_type: stepThree.booking_type,
-        payment_type: stepThree.payment_type,
+        metode_pembayaran: stepThree.metode_pembayaran,
     };
 };
 

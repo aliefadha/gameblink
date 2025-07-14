@@ -38,7 +38,7 @@ export interface CreateBookingRequest {
     total_harga: number;
     status_booking: string;
     booking_type: string;
-    payment_type: string;
+    metode_pembayaran: string;
     booking_details: {
         unit_id: string;
         jam_main: string;

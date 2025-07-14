@@ -25,7 +25,7 @@ export type StepThreeData = {
         tanggal: string,
     }[],
     booking_type: string,
-    payment_type: string
+    metode_pembayaran: string
 }
 
 

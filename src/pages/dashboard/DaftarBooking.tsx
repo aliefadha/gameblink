@@ -158,7 +158,7 @@ function DaftarBooking() {
         setSubmitStatus('idle');
         setSubmitError(null);
         try {
-            const tanggal_main = format(selectedDate, 'yyyy-MM-dd');
+            const tanggal_main = format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z';
             const tanggal_transaksi = format(new Date(), 'yyyy-MM-dd');
             const booking_details = selectedCells.map(cell => {
                 const unit = units?.find(u => u.id === cell.unitId);
@@ -166,7 +166,7 @@ function DaftarBooking() {
                     unit_id: cell.unitId,
                     jam_main: cell.time,
                     harga: unit?.harga || 0,
-                    tanggal: format(selectedDate, 'yyyy-MM-dd'),
+                    tanggal: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
                 };
             });
             const total_harga = booking_details.reduce((sum, d) => sum + d.harga, 0);
@@ -334,7 +334,7 @@ function DaftarBooking() {
                                                     booking.booking_details?.some((detail: import("@/types/Booking").BookingDetail) =>
                                                         detail.unit_id === unit.id &&
                                                         detail.jam_main === time &&
-                                                        format(new Date(detail.tanggal), 'yyyy-MM-dd') === (selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '')
+                                                        new Date(detail.tanggal).toDateString() === selectedDate?.toDateString()
                                                     )
                                                 );
 
@@ -487,7 +487,7 @@ function DaftarBooking() {
                                                 unit_id: cell.unitId,
                                                 jam_main: cell.time,
                                                 harga: unitObj?.harga || 0,
-                                                tanggal: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+                                                tanggal: selectedDate ? format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z' : '',
                                                 nama_unit: unitObj?.nama_unit || '',
                                                 status_booking_detail: '',
                                             };
