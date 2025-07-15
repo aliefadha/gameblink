@@ -141,7 +141,7 @@ function DaftarBooking() {
         nama: z.string().min(3, { message: 'Nama minimal 3 karakter' }),
         noHp: z.string().min(1, { message: 'Nomor HP harus diisi' }),
         email: z.string({ message: 'Email harus diisi' }).email({ message: 'Email tidak valid' }),
-        metodePembayaran: z.enum(['QRIS', 'Cash'], { required_error: 'Metode pembayaran harus dipilih' }),
+        metodePembayaran: z.enum(['nontunai', 'tunai'], { required_error: 'Metode pembayaran harus dipilih' }),
     });
     const form = useForm<z.infer<typeof bookingSchema>>({
         resolver: zodResolver(bookingSchema),
@@ -149,7 +149,7 @@ function DaftarBooking() {
             nama: '',
             noHp: '',
             email: '',
-            metodePembayaran: 'QRIS',
+            metodePembayaran: 'tunai',
         },
     });
 
@@ -159,7 +159,7 @@ function DaftarBooking() {
         setSubmitError(null);
         try {
             const tanggal_main = format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z';
-            const tanggal_transaksi = format(new Date(), 'yyyy-MM-dd');
+            const tanggal_transaksi = format(new Date(), 'yyyy-MM-dd') + 'T00:00:00.000Z';
             const booking_details = selectedCells.map(cell => {
                 const unit = units?.find(u => u.id === cell.unitId);
                 return {
@@ -466,8 +466,8 @@ function DaftarBooking() {
                                                         <SelectValue placeholder="Pilih metode pembayaran" />
                                                     </SelectTrigger>
                                                     <SelectContent>
-                                                        <SelectItem value="QRIS">QRIS</SelectItem>
-                                                        <SelectItem value="Cash">Cash</SelectItem>
+                                                        <SelectItem value="nontunai">Non Tunai</SelectItem>
+                                                        <SelectItem value="tunai">Tunai</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                             </FormControl>

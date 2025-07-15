@@ -57,17 +57,21 @@ export const columns: ColumnDef<Booking>[] = [
         header: "Metode Pembayaran",
         cell: ({ row }) => {
             const metode = row.getValue("metode_pembayaran") as string
-            return <div>
-                <span className="flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize">
-                    {metode === "qris"
-                        ? "QRIS"
-                        : metode === "bank_transfer"
-                            ? "Transfer"
-                            : metode === "cash"
-                                ? "CASH"
-                                : "Transfer"}
-                </span>
-            </div>
+            return (
+                <div>
+                    <span className="flex flex-1 justify-center py-1.5 rounded-full text-xs font-medium capitalize">
+                        {metode === "qris"
+                            ? "QRIS"
+                            : metode === "bank_transfer"
+                                ? "Transfer"
+                                : metode === "tunai"
+                                    ? "Tunai"
+                                    : metode === "nontunai"
+                                        ? "Non Tunai"
+                                        : metode}
+                    </span>
+                </div>
+            )
         }
     },
     {

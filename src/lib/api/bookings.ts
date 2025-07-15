@@ -5,7 +5,7 @@ import type { ApiResponse, PaginatedApiResponse } from "@/types/Api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const getBookings = async (date?: string, type?: string): Promise<Booking[]> => {
+export const getBookings = async (date?: string, type?: string, cabang?: string, limit?: integer, page?: integer): Promise<Booking[]> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
 
@@ -14,6 +14,15 @@ export const getBookings = async (date?: string, type?: string): Promise<Booking
     }
     if (type && type !== 'all') {
         params.append('type', type);
+    }
+    if (cabang && cabang !== 'all') {
+        params.append('cabang', cabang);
+    }
+    if (limit) {
+        params.append('limit', limit.toString());
+    }
+    if (page) {
+        params.append('page', page.toString());
     }
 
     if (params.toString()) {
