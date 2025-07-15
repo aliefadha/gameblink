@@ -29,7 +29,6 @@ export const getBookings = async (date?: string, type?: string, cabang?: string,
         fullUrl += `?${params.toString()}`;
     }
 
-    console.log('API URL:', fullUrl); // Debug logging
 
     const response = await fetch(fullUrl);
 

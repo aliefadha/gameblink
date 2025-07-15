@@ -25,7 +25,7 @@ export function AppRoutes() {
             {/* PUBLIC ROUTES                      */}
             {/* ================================================== */}
             {/* The login page is accessible to everyone, logged in or not. */}
-            <Route path="/login" element={<Login />} />
+            <Route path="/log8i8n738" element={<Login />} />
 
 
             {/* Booking flow routes - using the new BookingLayout */}

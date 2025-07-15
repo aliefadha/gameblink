@@ -127,14 +127,14 @@ function Booking() {
                     </Select>
                 </div>
             </div>
-            <DataTable 
-                columns={columns} 
-                data={bookings || []} 
-                isLoading={isLoading} 
-                onRefetch={refetch} 
+            <DataTable
+                columns={columns}
+                data={bookings || []}
+                isLoading={isLoading}
+                onRefetch={refetch}
                 onPageSizeChange={(newPageSize) => {
                     setPageSize(newPageSize);
-                    setPageNumber(1); // Reset to first page when page size changes
+                    setPageNumber(1);
                 }}
                 onPageChange={(pageIndex) => setPageNumber(pageIndex + 1)} // Convert 0-based index to 1-based page number
             />

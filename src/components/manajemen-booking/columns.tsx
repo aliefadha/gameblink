@@ -68,7 +68,13 @@ export const columns: ColumnDef<Booking>[] = [
                                     ? "Tunai"
                                     : metode === "nontunai"
                                         ? "Non Tunai"
-                                        : metode}
+                                        : metode === "gopay"
+                                            ? "GoPay"
+                                            : metode === "shopeepay"
+                                                ? "ShopeePay"
+                                                : metode === "dana"
+                                                    ? "DANA"
+                                                    : metode}
                     </span>
                 </div>
             )

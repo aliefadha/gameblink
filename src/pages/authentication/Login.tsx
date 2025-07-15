@@ -83,8 +83,9 @@ function Login() {
                             <Button
                                 type="submit"
                                 className="w-full bg-green-600 text-white hover:bg-green-700"
+                                disabled={form.formState.isSubmitting}
                             >
-                                Masuk
+                                {form.formState.isSubmitting ? 'Loading...' : 'Masuk'}
                             </Button>
                         </form>
                     </Form>

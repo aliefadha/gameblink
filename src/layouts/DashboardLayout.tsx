@@ -18,11 +18,11 @@ import { useAuth } from "@/hooks/use-auth";
 
 const menuItems = [
     { to: "/dashboard", icon: PiSquaresFourLight, label: "Dashboard" },
-    { to: "/dashboard/booking", icon: LuClipboardList, label: "Manajemen Booking" },
-    { to: "/dashboard/daftar-booking", icon: IoFlagOutline, label: "Daftar Booking" },
-    { to: "/dashboard/cabang", icon: BiHomeAlt, label: "Manajemen Cabang" },
+    { to: "/dashboard/booking", icon: LuClipboardList, label: "List Booking" },
+    { to: "/dashboard/daftar-booking", icon: IoFlagOutline, label: "Manage Booking" },
+    { to: "/dashboard/cabang", icon: BiHomeAlt, label: "Manage Cabang" },
     { to: "/dashboard/unit", icon: IoGameControllerOutline, label: "Manajemen Unit" },
-    { to: "/dashboard/ketersediaan", icon: PiCalendarCheck, label: "Manajemen Ketersediaan" },
+    { to: "/dashboard/ketersediaan", icon: PiCalendarCheck, label: "Manage Slot" },
     { to: "/dashboard/akses", icon: SlKey, label: "Akses" },
 ];
 

@@ -38,7 +38,7 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
     const [pageSize, setPageSize] = useState(10)
     const [pageIndex, setPageIndex] = useState(0)
-    
+
     const table = useReactTable({
         data,
         columns,
@@ -71,7 +71,7 @@ export function DataTable<TData, TValue>({
                             <TableHead className="w-[50px]">No</TableHead>
                             {headerGroup.headers.map((header) => {
                                 return (
-                                    <TableHead key={header.id}>
+                                    <TableHead key={header.id} className="text-center">
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(

@@ -62,11 +62,11 @@ export function EditBooking({ row, onRefetch }: EditBookingProps) {
                         <Select value={statusBooking} onValueChange={handleStatusChange} disabled={loading}>
                             <SelectTrigger
                                 className={`rounded-full px-4 py-1 text-sm font-semibold flex items-center gap-2 w-auto 
-                                    ${statusBooking === 'Aktif' ? 'bg-[#009B4F] text-white' : 
-                                      statusBooking === 'Dibatalkan' ? 'bg-[#D31A1D] text-white' : 
-                                      statusBooking === 'Selesai' ? 'bg-[#E9B03C] text-white' : 
-                                      statusBooking === 'TidakAktif' ? 'bg-[#6B7280] text-white' : 
-                                      'bg-gray-300 text-gray-700'}`}
+                                    ${statusBooking === 'Aktif' ? 'bg-[#009B4F] text-white' :
+                                        statusBooking === 'Dibatalkan' ? 'bg-[#D31A1D] text-white' :
+                                            statusBooking === 'Selesai' ? 'bg-[#E9B03C] text-white' :
+                                                statusBooking === 'TidakAktif' ? 'bg-[#6B7280] text-white' :
+                                                    'bg-gray-300 text-gray-700'}`}
                             >
                                 <SelectValue />
                                 {loading && <span className="ml-2 animate-spin">...</span>}
@@ -75,7 +75,6 @@ export function EditBooking({ row, onRefetch }: EditBookingProps) {
                                 <SelectItem value="Aktif">Aktif</SelectItem>
                                 <SelectItem value="TidakAktif">Tidak Aktif</SelectItem>
                                 <SelectItem value="Dibatalkan">Dibatalkan</SelectItem>
-                                <SelectItem value="Selesai">Selesai</SelectItem>
                             </SelectContent>
                         </Select>
                         {error && <div className="text-xs text-red-600 mt-1">{error}</div>}
@@ -146,9 +145,9 @@ export function EditBooking({ row, onRefetch }: EditBookingProps) {
                         {/* Booking Details Table */}
                         <div className="mt-6">
                             <div className="text-sm font-medium mb-3 text-[#61368E]">Detail Unit yang Dipesan</div>
-                            <BookingDetailsTable 
-                                columns={bookingDetailsColumns} 
-                                data={row.original.booking_details || []} 
+                            <BookingDetailsTable
+                                columns={bookingDetailsColumns}
+                                data={row.original.booking_details || []}
                             />
                         </div>
                     </div>
@@ -157,6 +156,6 @@ export function EditBooking({ row, onRefetch }: EditBookingProps) {
                     </Button>
                 </form>
             </DialogContent>
-        </Dialog>   
+        </Dialog>
     )
 }
