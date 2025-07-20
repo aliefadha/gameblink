@@ -30,13 +30,15 @@ function BookingLayout() {
     }, [location.pathname]);
 
     useEffect(() => {
-        const snapScript = "https://app.sandbox.midtrans.com/snap/snap.js"
+        const snapScript = import.meta.env.VITE_API_MOCKING === "false"
+            ? "https://app.midtrans.com/snap/snap.js"
+            : "https://app.sandbox.midtrans.com/snap/snap.js"
         const script = document.createElement("script");
         script.src = snapScript;
         script.setAttribute("data-client-key", import.meta.env.MIDTRANS_CLIENT_KEY || "");
         script.async = true;
         document.body.appendChild(script);
-      }, []);
+    }, []);
 
     useEffect(() => {
         if (currentStep === 2 && !stepOne) {
@@ -79,11 +81,11 @@ function BookingLayout() {
                     <Route index element={<BookingPage />} />
                     <Route path="cabang" element={<BookingCabang />} />
                     <Route path="jadwal" element={<BookingJadwal />} />
-                    <Route path="details" element={<BookingDetail/>} />
+                    <Route path="details" element={<BookingDetail />} />
                 </Routes>
             </div>
         </div>
     );
 }
 
-export default BookingLayout; 
+export default BookingLayout;

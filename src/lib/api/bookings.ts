@@ -37,7 +37,6 @@ export const getBookings = async (date?: string, type?: string, cabang?: string,
     }
 
     const apiResponse: PaginatedApiResponse<Booking> = await response.json();
-    console.log('API Response:', apiResponse); // Debug logging
 
     // Return the booking data array from the paginated response
     return apiResponse.data.data;
