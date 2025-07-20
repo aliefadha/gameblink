@@ -5,6 +5,8 @@
 
 @theme {
   --font-nebula: "Nebula", "sans-serif"; 
+  --font-play: "Play", "sans-serif";
+  --font-play-bold: "PlayBold", "sans-serif";
 }
 
 @theme inline {
@@ -129,6 +131,17 @@
   @font-face {
     font-family: "Nebula";
     src: local("Nebula"), url("./fonts/Nebula-Regular.otf");
+  }
+
+  @font-face {
+    font-family: "Play";
+    src: local("Play"), url("./fonts/Play-Regular.ttf") format('truetype');
+  }
+
+  @font-face {
+    font-family: "PlayBold";
+    src: local("PlayBold"), url("./fonts/Play-Bold.ttf") format('truetype');
+    font-weight: bold;
   }
   
   body {

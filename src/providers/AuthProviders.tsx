@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else if (profile.role === 'ADMIN') {
             navigate('/dashboard/booking', { replace: true });
         } else {
-            navigate('/log8i8n#738', { replace: true });
+            navigate('/log8i8n738', { replace: true });
         }
     };
 
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } finally {
             localStorage.removeItem('access_token');
             setUser(null);
-            navigate('/log8i8n#738', { replace: true });
+            navigate('/log8i8n738', { replace: true });
         }
     };
 

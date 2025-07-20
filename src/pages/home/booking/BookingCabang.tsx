@@ -1,13 +1,14 @@
 import { getCabangs } from "@/lib/api/cabangs";
 import useFormStore, { type StepTwoData } from "@/store/UseFormStore";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
 function BookingCabang() {
     const navigate = useNavigate();
     const { stepOne, setData } = useFormStore();
-    
+    const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+
     const { data: cabangs, isLoading } = useQuery({
         queryKey: ['cabangs'],
         queryFn: async () => {
@@ -35,6 +36,10 @@ function BookingCabang() {
         navigate('/booking/jadwal');
     };
 
+    const handleImageLoad = (cabangId: string) => {
+        setLoadedImages(prev => new Set(prev).add(cabangId));
+    };
+
     return (
         <div className="py-10 max-w-[350px] md:max-w-xl lg:max-w-3xl mx-auto gap-y-6 flex flex-col h-full">
             <h1 className="font-semibold md:text-xl lg:text-2xl">Pilih Cabang</h1>
@@ -59,10 +64,24 @@ function BookingCabang() {
                                     nama_cabang: `${cabang.nama_cabang}`
                                 })}>
                                 <div className="w-full h-[70px] relative">
-                                    <img src={`${import.meta.env.VITE_API_BASE_URL}${cabang.imageCabang}`} className="h-full w-full object-cover rounded-xl" />
-                                    <div className="absolute inset-0 bg-linear-to-r opacity-80 from-[#000000] to-[#61368E] rounded-2xl"></div>
+                                    {/* Background skeleton */}
+                                    <div className="h-full w-full bg-gradient-to-r from-[#000000] to-[#61368E] rounded-xl opacity-80"></div>
+                                    
+                                    {/* Image that loads in background */}
+                                    <img 
+                                        src={`${import.meta.env.VITE_API_BASE_URL}${cabang.imageCabang}`} 
+                                        className={`h-full w-full object-cover rounded-xl object-center absolute inset-0 transition-opacity duration-300 ${
+                                            loadedImages.has(cabang.id.toString()) ? 'opacity-100' : 'opacity-0'
+                                        }`}
+                                        onLoad={() => handleImageLoad(cabang.id.toString())}
+                                    />
+                                    
+                                    {/* Overlay gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-r opacity-80 from-[#000000] to-[#61368E] rounded-xl"></div>
+                                    
+                                    {/* Text content - always visible */}
                                     <div className="absolute inset-0 flex items-center justify-start p-4">
-                                        <h1 className="text-white font-semibold">{cabang.nama_cabang}</h1>
+                                        <h1 className="text-white font-bold font-play-bold">{cabang.nama_cabang}</h1>
                                     </div>
                                 </div>
                             </button>

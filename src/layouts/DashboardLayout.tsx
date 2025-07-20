@@ -21,7 +21,7 @@ const menuItems = [
     { to: "/dashboard/booking", icon: LuClipboardList, label: "List Booking" },
     { to: "/dashboard/daftar-booking", icon: IoFlagOutline, label: "Manage Booking" },
     { to: "/dashboard/cabang", icon: BiHomeAlt, label: "Manage Cabang" },
-    { to: "/dashboard/unit", icon: IoGameControllerOutline, label: "Manajemen Unit" },
+    { to: "/dashboard/unit", icon: IoGameControllerOutline, label: "Manage Unit" },
     { to: "/dashboard/ketersediaan", icon: PiCalendarCheck, label: "Manage Slot" },
     { to: "/dashboard/akses", icon: SlKey, label: "Akses" },
 ];

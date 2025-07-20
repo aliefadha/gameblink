@@ -104,7 +104,7 @@ export function EditCabangDialog({ cabang }: EditCabangDialogProps) {
                                             <Input
                                                 type="file"
                                                 className="bg-[#F8F5F5] rounded-sm pl-10 file:text-gray-600"
-                                                accept="image/png, image/jpeg, image/jpg"
+                                                accept="image/png, image/jpeg, image/jpg, image/webp, image/svg"
                                                 onChange={(e) => {
                                                     field.onChange(e.target.files);
                                                     const file = e.target.files?.[0];

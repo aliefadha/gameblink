@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const MAX_FILE_SIZE = 5000000; // 5MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png"];
+const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/svg"];
 
 const fileSchema = z
     .instanceof(FileList, { message: "Foto tidak boleh kosong." })
@@ -9,7 +9,7 @@ const fileSchema = z
     .refine((files) => files?.[0]?.size <= MAX_FILE_SIZE, `Ukuran file maksimal 5MB.`)
     .refine(
         (files) => ACCEPTED_IMAGE_TYPES.includes(files?.[0]?.type),
-        "Format foto harus .jpg atau .png."
+        "Format foto harus .jpg, .png., .webp, atau .svg"
     );
 
 const baseCabangSchema = z.object({

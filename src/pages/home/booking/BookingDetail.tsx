@@ -26,6 +26,37 @@ function formatRupiah(value: number) {
   return "Rp" + value.toLocaleString("id-ID");
 }
 
+function formatPhoneNumber(phoneNumber: string): string {
+  if (!phoneNumber) return '-';
+
+  // Remove any non-digit characters
+  const digits = phoneNumber.replace(/\D/g, '');
+
+  // If it starts with 62, format as +62 8xxx-xxxx-xxxx
+  if (digits.startsWith('62')) {
+    const mainNumber = digits.substring(2);
+    if (mainNumber.length >= 9) {
+      return `+62 ${mainNumber.substring(0, 4)}-${mainNumber.substring(4, 8)}-${mainNumber.substring(8)}`;
+    }
+  }
+
+  // If it starts with 0, remove the 0 and format as +62 8xxx-xxxx-xxxx
+  if (digits.startsWith('0')) {
+    const mainNumber = digits.substring(1);
+    if (mainNumber.length >= 9) {
+      return `+62 ${mainNumber.substring(0, 4)}-${mainNumber.substring(4, 8)}-${mainNumber.substring(8)}`;
+    }
+  }
+
+  // If it starts with 8, format as +62 8xxx-xxxx-xxxx
+  if (digits.startsWith('8') && digits.length >= 9) {
+    return `+62 ${digits.substring(0, 4)}-${digits.substring(4, 8)}-${digits.substring(8)}`;
+  }
+
+  // Return original if doesn't match expected patterns
+  return phoneNumber;
+}
+
 
 function BookingDetail() {
   const { stepOne, stepTwo, stepThree } = useFormStore();
@@ -48,8 +79,6 @@ function BookingDetail() {
       return;
     }
 
-    console.log(stepThree.total_harga)
-    console.log(totalBayar)
 
     setIsSubmitting(true);
     setError(null);
@@ -61,7 +90,6 @@ function BookingDetail() {
         metode_pembayaran: paymentType
       };
 
-      console.log(stepThree.total_harga)
 
       // Update the store with the final total
       const { setData } = useFormStore.getState();
@@ -129,7 +157,7 @@ function BookingDetail() {
       </div>
       <div className="mb-4">
         <div className="text-xs sm:text-sm font-medium mb-1">No HP</div>
-        <div className="bg-[#FAF8F7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base">{stepOne?.noHp || '-'}</div>
+        <div className="bg-[#FAF8F7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base">{formatPhoneNumber(stepOne?.noHp || '')}</div>
       </div>
       <div className="mb-4">
         <div className="text-xs sm:text-sm font-medium mb-1">Email</div>
@@ -235,10 +263,10 @@ function BookingDetail() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
                       { value: 'bank_transfer', label: 'Transfer Bank', icon: '/images/payment-icons/bank-transfer.svg' },
-                      { value: 'gopay', label: 'GoPay', icon: '/images/payment-icons/gopay.svg' },
-                      { value: 'shopeepay', label: 'ShopeePay', icon: '/images/payment-icons/shopeepay.svg' },
-                      { value: 'dana', label: 'Dana', icon: '/images/payment-icons/dana.svg' },
-                      { value: 'qris', label: 'QRIS', icon: '/images/payment-icons/qris.svg' }
+                      // { value: 'gopay', label: 'GoPay', icon: '/images/payment-icons/gopay.svg' },
+                      // { value: 'shopeepay', label: 'ShopeePay', icon: '/images/payment-icons/shopeepay.svg' },
+                      // { value: 'dana', label: 'Dana', icon: '/images/payment-icons/dana.svg' },
+                      // { value: 'qris', label: 'QRIS', icon: '/images/payment-icons/qris.svg' }
                     ].map((method) => (
                       <div
                         key={method.value}

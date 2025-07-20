@@ -5,7 +5,7 @@ import type { ApiResponse, PaginatedApiResponse } from "@/types/Api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const getBookings = async (date?: string, type?: string, cabang?: string, limit?: integer, page?: integer): Promise<Booking[]> => {
+export const getBookings = async (date?: string, type?: string, cabang?: string, limit?: number, page?: number): Promise<Booking[]> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
 

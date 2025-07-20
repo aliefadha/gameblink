@@ -123,7 +123,21 @@ export function EditBooking({ row, onRefetch }: EditBookingProps) {
                                 <div>
                                     <div className="text-xs sm:text-sm font-medium mb-1">Metode Pembayaran</div>
                                     <div className="bg-[#FAF8F7] rounded-xl px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base">
-                                        {row.original.metode_pembayaran === 'qris' ? 'QRIS' : row.original.metode_pembayaran === 'bank_transfer' ? 'Transfer' : row.original.metode_pembayaran === 'cash' ? 'CASH' : 'Transfer'}
+                                        {row.original.metode_pembayaran === "qris"
+                                            ? "QRIS"
+                                            : row.original.metode_pembayaran === "bank_transfer"
+                                                ? "Transfer"
+                                                : row.original.metode_pembayaran === "tunai"
+                                                    ? "Tunai"
+                                                    : row.original.metode_pembayaran === "nontunai"
+                                                        ? "Non Tunai"
+                                                        : row.original.metode_pembayaran === "gopay"
+                                                            ? "GoPay"
+                                                            : row.original.metode_pembayaran === "shopeepay"
+                                                                ? "ShopeePay"
+                                                                : row.original.metode_pembayaran === "dana"
+                                                                    ? "DANA"
+                                                                    : row.original.metode_pembayaran}
                                     </div>
                                 </div>
                                 <div>

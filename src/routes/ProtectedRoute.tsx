@@ -6,7 +6,7 @@ export function ProtectedRoute({ allowedRoles }: { allowedRoles: User['role'][] 
   const { user, isAuthenticated, isLoading } = useAuth();
   if (isLoading) return <div>Loading...</div>;
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/log8i8n738" replace />;
   }
   if (!user || !allowedRoles.includes(user.role)) {
     if (user?.role === 'ADMIN') {
@@ -14,7 +14,7 @@ export function ProtectedRoute({ allowedRoles }: { allowedRoles: User['role'][] 
     } else if (user?.role === 'SUPERADMIN') {
       return <Navigate to="/dashboard" replace />;
     } else {
-      return <Navigate to="/login" replace />;
+      return <Navigate to="/log8i8n738" replace />;
     }
   }
   return <Outlet />;
