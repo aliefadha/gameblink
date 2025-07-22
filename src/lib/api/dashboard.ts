@@ -9,6 +9,15 @@ export type Dashboard = {
     bestCabang: string;
 }
 
+export type Summary = {
+    cabang: string;
+    konsolSummary: {
+        jenis_konsol: string,
+        totalRevenue: number
+    }[],
+    totalRevenue: number;
+}
+
 export type ChartData = {
     date: string;
     countBooking: number;
@@ -42,6 +51,37 @@ export const getChartData = async (cabangId: string, startDate: string, endDate:
     }
 
     const result: ApiResponse<ChartData[]> = await response.json();
+
+    return result.data;
+}
+
+
+
+export const getSummary = async (startDate: string, endDate: string, type: string, metode_pembayaran: string): Promise<Summary[]> => {
+    const params = new URLSearchParams({
+        startDate,
+        endDate
+    });
+
+    if (type && type.trim() !== '') {
+        params.append('type', type);
+    }
+
+    if (metode_pembayaran && metode_pembayaran.trim() !== '') {
+        params.append('metode_pembayaran', metode_pembayaran);
+    }
+
+    const fullUrl = `${API_BASE_URL}/dashboard/booking-summary?${params.toString()}`;
+
+    const response = await fetch(fullUrl, {
+        method: 'GET',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Network response was not ok. Status: ${response.status}`);
+    }
+
+    const result: ApiResponse<Summary[]> = await response.json();
 
     return result.data;
 }

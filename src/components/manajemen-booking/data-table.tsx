@@ -5,7 +5,6 @@ import {
     getPaginationRowModel,
     useReactTable,
 } from "@tanstack/react-table"
-import { useState } from "react"
 
 import {
     Table,
@@ -24,41 +23,20 @@ interface DataTableProps<TData, TValue> {
     data: TData[],
     isLoading: boolean,
     onRefetch?: () => void
-    onPageSizeChange?: (pageSize: number) => void
-    onPageChange?: (pageIndex: number) => void
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
     isLoading,
-    onRefetch,
-    onPageSizeChange,
-    onPageChange
+    onRefetch
 }: DataTableProps<TData, TValue>) {
-    const [pageSize, setPageSize] = useState(10)
-    const [pageIndex, setPageIndex] = useState(0)
 
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        state: {
-            pagination: {
-                pageIndex,
-                pageSize,
-            },
-        },
-        onPaginationChange: (updater) => {
-            if (typeof updater === 'function') {
-                const newPagination = updater({ pageIndex, pageSize })
-                setPageIndex(newPagination.pageIndex)
-                setPageSize(newPagination.pageSize)
-                onPageChange?.(newPagination.pageIndex)
-                onPageSizeChange?.(newPagination.pageSize)
-            }
-        },
         meta: { onRefetch },
     })
 
@@ -98,7 +76,7 @@ export function DataTable<TData, TValue>({
                                 key={row.id}
                                 data-state={row.getIsSelected() && "selected"}
                             >
-                                <TableCell className="text-center">{index + 1}</TableCell>
+                                <TableCell className="text-center">{table.getState().pagination.pageIndex * table.getState().pagination.pageSize + index + 1}</TableCell>
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}

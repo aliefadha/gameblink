@@ -70,7 +70,7 @@ function DashboardLayout() {
                 </Sidebar>
 
                 <div className="w-full overflow-y-auto relative bg-[#F9F4FF]">
-                    <header className="bg-white py-4 px-10 sticky top-0 flex items-center">
+                    <header className="bg-white py-4 px-10 flex items-center">
                         <SidebarTrigger className="mr-4" />
                         <div className="flex flex-1 justify-end">
                             <h1>{user?.name}</h1>

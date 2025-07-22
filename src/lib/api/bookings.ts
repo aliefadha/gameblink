@@ -5,7 +5,7 @@ import type { ApiResponse, PaginatedApiResponse } from "@/types/Api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const getBookings = async (date?: string, type?: string, cabang?: string, limit?: number, page?: number): Promise<Booking[]> => {
+export const getBookings = async (date?: string, type?: string, cabang?: string, search?: string, limit?: number): Promise<Booking[]> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
 
@@ -18,31 +18,31 @@ export const getBookings = async (date?: string, type?: string, cabang?: string,
     if (cabang && cabang !== 'all') {
         params.append('cabang', cabang);
     }
+    if (search) {
+        params.append('search', search);
+    }
     if (limit) {
         params.append('limit', limit.toString());
-    }
-    if (page) {
-        params.append('page', page.toString());
     }
 
     if (params.toString()) {
         fullUrl += `?${params.toString()}`;
     }
 
-
     const response = await fetch(fullUrl);
 
     if (!response.ok) {
+        if (response.status === 404) {
+            return [];
+        }
         throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
 
     const apiResponse: PaginatedApiResponse<Booking> = await response.json();
 
-    // Return the booking data array from the paginated response
-    return apiResponse.data.data;
+    return apiResponse.data?.data || [];
 };
 
-// New function to get bookings with pagination metadata
 export const getBookingsWithMeta = async (date?: string, type?: string): Promise<PaginatedApiResponse<Booking>> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
@@ -61,10 +61,46 @@ export const getBookingsWithMeta = async (date?: string, type?: string): Promise
     const response = await fetch(fullUrl);
 
     if (!response.ok) {
+        if (response.status === 404) {
+            return {
+                statusCode: 404,
+                message: 'No data found',
+                data: {
+                    data: [],
+                    meta: {
+                        current_page: 1,
+                        from: 0,
+                        last_page: 1,
+                        links: [],
+                        path: '',
+                        per_page: 0,
+                        to: 0,
+                        total: 0
+                    }
+                }
+            };
+        }
         throw new Error(`Network response was not ok. Status: ${response.status}`);
     }
 
     const apiResponse: PaginatedApiResponse<Booking> = await response.json();
+
+    if (!apiResponse.data) {
+        apiResponse.data = {
+            data: [],
+            meta: {
+                current_page: 1,
+                from: 0,
+                last_page: 1,
+                links: [],
+                path: '',
+                per_page: 0,
+                to: 0,
+                total: 0
+            }
+        };
+    }
+
     return apiResponse;
 }
 
@@ -186,3 +222,50 @@ export const updateBooking = async (bookingId: string, status_booking: string): 
     return result;
 
 }
+
+export const exportBookings = async (date?: string, type?: string, cabang?: string, search?: string, format: 'excel' | 'csv' = 'excel'): Promise<ArrayBuffer> => {
+    const token = getToken();
+    let fullUrl = `${API_BASE_URL}/booking/export`;
+    const params = new URLSearchParams();
+
+    if (date) {
+        params.append('tanggal_main', date);
+    }
+    if (type && type !== 'all') {
+        params.append('type', type);
+    }
+    if (cabang && cabang !== 'all') {
+        params.append('cabang', cabang);
+    }
+    if (search) {
+        params.append('search', search);
+    }
+    
+    // Add format parameter to API request
+    params.append('format', format);
+
+    if (params.toString()) {
+        fullUrl += `?${params.toString()}`;
+    }
+
+    const headers: HeadersInit = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(fullUrl, {
+        method: 'GET',
+        headers: headers,
+    });
+
+    if (!response.ok) {
+        if (response.status === 404) {
+            throw new Error('No data found to export');
+        }
+        throw new Error(`Export failed with status: ${response.status}`);
+    }
+
+    // Use arrayBuffer for both Excel and CSV formats
+    const data = await response.arrayBuffer();
+    return data;
+};
