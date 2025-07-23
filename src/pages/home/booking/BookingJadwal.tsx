@@ -43,8 +43,12 @@ function BookingJadwal() {
         ],
         queryFn: async () => {
             if (!cabangId || !selectedDate) return [];
-            const allBookings = await getBookings(format(selectedDate, 'yyyy-MM-dd'));
-            return allBookings.filter((b: import("@/types/Booking").Booking) => b.cabang_id === cabangId && b.status_booking === 'Aktif');
+            const allBookings = await getBookings(
+                format(selectedDate, 'yyyy-MM-dd'),
+                undefined, // type
+                cabangId // cabang parameter
+            );
+            return allBookings.filter((b: import("@/types/Booking").Booking) => b.status_booking === 'Aktif');
         },
         enabled: !!cabangId && !!selectedDate
     });
@@ -148,10 +152,10 @@ function BookingJadwal() {
 
                     {(units ?? []).length > 0 && (
                         <div className="w-full overflow-x-auto">
-                            <table className="min-w-max w-full border-collapse">
+                            <table className="min-w-max w-full border-collapse relative">
                                 <thead>
                                     <tr>
-                                        <th className="text-xs font-bold text-[#2F2F2F] text-left p-2 w-[85px]">Jam</th>
+                                        <th className="text-xs font-bold text-[#2F2F2F] text-left p-2 w-[85px] sticky left-0 bg-white z-10 ">Jam</th>
                                         {units?.map((unit) => (
                                             <th key={unit.id} className="text-center p-2 w-[150px]">
                                                 <div className="text-center text-xs">
@@ -169,7 +173,7 @@ function BookingJadwal() {
                                 <tbody>
                                     {timeSlots.map((time) => (
                                         <tr key={time}>
-                                            <td className="text-xs font-bold text-[#2F2F2F] p-2">{time}</td>
+                                            <td className="text-xs font-bold text-[#2F2F2F] p-2 sticky left-0 bg-white z-10">{time}</td>
                                             {units?.map((unit) => {
                                                 const slotData = {
                                                     unitId: unit.id,

@@ -74,8 +74,11 @@ function DaftarBooking() {
         ],
         queryFn: async () => {
             if (!cabang?.id || !selectedDate) return [];
-            const allBookings = await getBookings(format(selectedDate, 'yyyy-MM-dd'));
-            return allBookings.filter((b: import("@/types/Booking").Booking) => b.cabang_id === cabang.id);
+            return await getBookings(
+                format(selectedDate, 'yyyy-MM-dd'),
+                undefined, // type
+                cabang.id // cabang parameter
+            );
         },
         enabled: !!cabang && !!selectedDate
     });
@@ -287,21 +290,21 @@ function DaftarBooking() {
                                 <div className="h-[15px] w-[15px] bg-gray-600 rounded-full"></div>
                                 <p>Diblokir</p>
                             </div>
+                            {selectedCells.length > 0 && (
+                                <div>
+                                    <Button variant="purple" onClick={() => {
+                                        if (selectedCells.length > 0) {
+                                            setDialogOpen(true);
+                                        } else {
+                                            toast.error('Pilih minimal satu slot waktu untuk booking');
+                                        }
+                                    }}>
+                                        <FaGamepad size={16} />  ({selectedCells.length})
+                                    </Button>
+                                </div>
+                            )}
                         </div>
                     </div>
-                    {selectedCells.length > 0 && (
-                        <div className="mt-4 flex justify-end">
-                            <Button variant="purple" onClick={() => {
-                                if (selectedCells.length > 0) {
-                                    setDialogOpen(true);
-                                } else {
-                                    toast.error('Pilih minimal satu slot waktu untuk booking');
-                                }
-                            }}>
-                                <FaGamepad size={16} />  ({selectedCells.length})
-                            </Button>
-                        </div>
-                    )}
                 </CardHeader>
                 <CardContent>
                     {(units ?? []).length > 0 && (
@@ -309,9 +312,9 @@ function DaftarBooking() {
                             <table className="min-w-max w-full border-collapse">
                                 <thead>
                                     <tr>
-                                        <th className="text-xs font-bold text-[#2F2F2F] text-left p-2 w-[85px]">Jam</th>
+                                        <th className="text-xs font-bold text-[#2F2F2F] text-left p-1 w-[85px] sticky left-0 bg-white z-10">Jam</th>
                                         {units?.map((unit) => (
-                                            <th key={unit.id} className="text-center p-2 w-[150px]">
+                                            <th key={unit.id} className="text-center p-1 w-[100px]">
                                                 <div className="text-center text-xs">
                                                     <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
                                                         <p>{unit.nama_unit}</p>
@@ -327,7 +330,7 @@ function DaftarBooking() {
                                 <tbody>
                                     {timeSlots.map((time) => (
                                         <tr key={time}>
-                                            <td className="text-xs font-bold text-[#2F2F2F] p-2">{time}</td>
+                                            <td className="text-xs font-bold text-[#2F2F2F] p-1 sticky left-0 bg-white z-10">{time}</td>
                                             {units?.map((unit) => {
                                                 const isBooked = (bookings ?? []).some((booking: import("@/types/Booking").Booking) =>
                                                     booking.status_booking === "Aktif" &&
@@ -345,7 +348,7 @@ function DaftarBooking() {
                                                 );
 
                                                 return (
-                                                    <td key={`${time}-${unit.id}`} className="text-center p-2 w-[150px]">
+                                                    <td key={`${time}-${unit.id}`} className="text-center p-1 w-[150px]">
                                                         <Button
                                                             className={`w-full ${isBooked
                                                                 ? "bg-[#D31A1D] text-white hover:bg-[#D31A1D] cursor-not-allowed booked"

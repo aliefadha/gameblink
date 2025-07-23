@@ -20,3 +20,7 @@ export function omit<T extends object, K extends keyof T>(
 export function hasRole(user: User, roles: string[]) {
   return user && roles.includes(user.role);
 }
+
+export function formatRupiah(amount: number): string {
+  return `Rp ${amount.toLocaleString('id-ID')}`;
+}

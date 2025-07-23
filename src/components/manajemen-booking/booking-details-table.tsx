@@ -30,14 +30,14 @@ export function BookingDetailsTable<TData, TValue>({
     })
 
     return (
-        <div className="w-full rounded-lg border overflow-x-scroll">
+        <div className="w-full rounded-lg overflow-x-scroll">
             <Table>
-                <TableHeader className="bg-[#61368E] rounded-t-lg">
+                <TableHeader className="bg-[#61368E] ">
                     {table.getHeaderGroups().map((headerGroup) => (
                         <TableRow key={headerGroup.id}>
                             {headerGroup.headers.map((header) => {
                                 return (
-                                    <TableHead 
+                                    <TableHead
                                         key={header.id}
                                         className="text-white text-xs font-medium py-2 px-3"
                                         style={{
@@ -66,7 +66,7 @@ export function BookingDetailsTable<TData, TValue>({
                                 data-state={row.getIsSelected() && "selected"}
                             >
                                 {row.getVisibleCells().map((cell) => (
-                                    <TableCell 
+                                    <TableCell
                                         key={cell.id}
                                         className="text-xs py-2 px-3"
                                         style={{

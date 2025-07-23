@@ -19,6 +19,7 @@ import { getDashboard, type Dashboard, type Summary, getSummary, } from "@/lib/a
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { FaFilter } from "react-icons/fa"
+import { formatRupiah } from "@/lib/utils"
 
 function DashboardPage() {
 
@@ -156,7 +157,7 @@ function DashboardPage() {
                         <CardTitle>
                             <h1 className="flex text-white gap-x-2 items-center font-normal text-sm sm:text-base">
                                 <BsCheckCircle size={20} />
-                                <span className="truncate">Tersedia</span>
+                                <span className="truncate">Total Unit</span>
                             </h1>
                         </CardTitle>
                     </CardHeader>
@@ -390,7 +391,7 @@ function DashboardPage() {
                                         <Calendar
                                             mode="range"
                                             min={1}
-                                            max={6}
+                                            max={30}
                                             defaultMonth={summaryDateRange?.from}
                                             selected={summaryDateRange}
                                             onSelect={(range) => {
@@ -472,14 +473,14 @@ function DashboardPage() {
 
                                         return (
                                             <tr key={index} className="border-b hover:bg-gray-50">
-                                                <td className="p-3 font-medium">{summaryItem.cabang}</td>
-                                                <td className="p-3 text-center">{ps4Regular}</td>
-                                                <td className="p-3 text-center">{ps5Regular}</td>
-                                                <td className="p-3 text-center">{vipPs4}</td>
-                                                <td className="p-3 text-center">{vipPs5}</td>
-                                                <td className="p-3 text-center">{loungeRoom}</td>
-                                                <td className="p-3 text-center">{superLoungeRoom}</td>
-                                                <td className="p-3 text-center font-semibold">{summaryItem.totalRevenue}</td>
+                                                <td className="p-3 font-bold text-[#61368E]">{summaryItem.cabang}</td>
+                                                <td className="p-3 text-center text-[#61368E]">{formatRupiah(ps4Regular)}</td>
+                                                <td className="p-3 text-center text-[#61368E]">{formatRupiah(ps5Regular)}</td>
+                                                <td className="p-3 text-center text-[#61368E]">{formatRupiah(vipPs4)}</td>
+                                                <td className="p-3 text-center text-[#61368E]">{formatRupiah(vipPs5)}</td>
+                                                <td className="p-3 text-center text-[#61368E]">{formatRupiah(loungeRoom)}</td>
+                                                <td className="p-3 text-center text-[#61368E]">{formatRupiah(superLoungeRoom)}</td>
+                                                <td className="p-3 text-center font-semibold text-[#61368E]">{formatRupiah(summaryItem.totalRevenue)}</td>
                                             </tr>
                                         );
                                     })
