@@ -130,7 +130,7 @@ function BookingDetail() {
         return Math.round(subtotal * 0.02);
       case 'dana':
         return Math.round(subtotal * 0.015);
-      case 'qris':
+      case 'other_qris':
         return Math.round(subtotal * 0.007);
       default:
         return 0;
