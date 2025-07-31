@@ -74,7 +74,9 @@ export const columns: ColumnDef<Booking>[] = [
                                                 ? "ShopeePay"
                                                 : metode === "dana"
                                                     ? "DANA"
-                                                    : metode}
+                                                    : metode === "other_qris"
+                                                        ? "QRIS"
+                                                        : metode}
                     </span>
                 </div>
             )

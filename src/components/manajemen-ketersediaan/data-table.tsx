@@ -68,7 +68,7 @@ export function DataTable<TData, TValue>({
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell
                                         key={cell.id}
-                                        className="text-center sm:text-left"
+                                        className="text-center"
                                         style={{
                                             minWidth: cell.column.columnDef.size,
                                             maxWidth: cell.column.columnDef.size,

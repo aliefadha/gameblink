@@ -402,13 +402,6 @@ function DashboardPage() {
                                                 }
                                             }}
                                             className="rounded-lg border shadow-sm"
-                                            disabled={(date) => {
-                                                const today = new Date();
-                                                today.setHours(23, 59, 59, 999);
-                                                if (date > today) return true;
-
-                                                return false;
-                                            }}
                                         />
                                     </DropdownMenuContent>
                                 </DropdownMenu>
@@ -480,7 +473,7 @@ function DashboardPage() {
                                                 <td className="p-3 text-center text-[#61368E]">{formatRupiah(vipPs5)}</td>
                                                 <td className="p-3 text-center text-[#61368E]">{formatRupiah(loungeRoom)}</td>
                                                 <td className="p-3 text-center text-[#61368E]">{formatRupiah(superLoungeRoom)}</td>
-                                                <td className="p-3 text-center font-semibold text-[#61368E]">{formatRupiah(summaryItem.totalRevenue)}</td>
+                                                <td className="p-3 text-center font-semibold text-[#61368E]">Rp {formatRupiah(summaryItem.totalRevenue)}</td>
                                             </tr>
                                         );
                                     })

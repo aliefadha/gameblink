@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { Cabang } from "@/types/Cabang"
 import type { Ketersediaan } from "@/types/Ketersediaan"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
@@ -21,8 +22,7 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { BookingDetailsTable } from "@/components/manajemen-booking/booking-details-table";
-import { bookingDetailsColumns } from "@/components/manajemen-booking/booking-details-columns";
+import type { BookingDetail } from "@/types/Booking";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FaGamepad } from "react-icons/fa";
 import { toast } from "sonner"
@@ -31,6 +31,7 @@ function DaftarBooking() {
 
     const [cabang, setCabang] = useState<Cabang | null>(null);
     const queryClient = useQueryClient();
+    const [phoneDisplay, setPhoneDisplay] = useState('');
 
     const { data: cabangs, isLoading: isLoadingCabang, error: cabangsError } = useQuery({
         queryKey: ['cabangs'],
@@ -45,6 +46,52 @@ function DaftarBooking() {
             }
         },
     });
+
+    const formatPhoneNumber = (value: string) => {
+        // Remove all non-digit characters
+        const digits = value.replace(/\D/g, '');
+
+        if (digits.length === 0) {
+            return '';
+        }
+
+        // Remove leading 0 if present (convert 08xxx to 8xxx)
+        let cleanDigits = digits.startsWith('0') ? digits.slice(1) : digits;
+
+        // Limit to 12 digits (Indonesian mobile numbers are typically 10-12 digits after country code)
+        cleanDigits = cleanDigits.slice(0, 12);
+
+        // Format as 8xxx-xxxx-xxxx
+        let formatted = cleanDigits;
+        if (cleanDigits.length > 4) {
+            formatted = cleanDigits.slice(0, 4) + '-' + cleanDigits.slice(4, 8);
+            if (cleanDigits.length > 8) {
+                formatted += '-' + cleanDigits.slice(8);
+            }
+        }
+
+        return formatted;
+    };
+
+    const handlePhoneChange = (value: string) => {
+        const formatted = formatPhoneNumber(value);
+        setPhoneDisplay(formatted);
+
+        // Store the clean digits for form validation
+        const digits = value.replace(/\D/g, '');
+
+        // If no digits, clear the form value
+        if (digits.length === 0) {
+            form.setValue('noHp', '');
+            return;
+        }
+
+        // Remove leading 0 if present and add 62 prefix for storage
+        let cleanNumber = digits.startsWith('0') ? digits.slice(1) : digits;
+        cleanNumber = '62' + cleanNumber;
+
+        form.setValue('noHp', cleanNumber);
+    };
 
     const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
 
@@ -112,32 +159,37 @@ function DaftarBooking() {
             const currentTime = parseInt(time.replace('.00', ''));
             const startTime = parseInt(ketersediaan.jam_mulai_blokir.replace('.00', ''));
 
-            // If date is before start, not blocked
-            if (dateStr < startDate) return false;
-
-            // Pending: block from start date/time onwards, no end
-            if (ketersediaan.status_perbaikan === "Pending") {
-                if (dateStr > startDate) return true;
-                if (dateStr === startDate && currentTime >= startTime) return true;
-                return false;
-            }
-
-            // Selesai: do not block anything
             if (ketersediaan.status_perbaikan === "Selesai") {
-                return false;
+                if (!ketersediaan.tanggal_selesai_blokir || !ketersediaan.jam_selesai_blokir) {
+                    return false;
+                }
+
+                const endDate = format(new Date(ketersediaan.tanggal_selesai_blokir), 'yyyy-MM-dd');
+                const endTime = parseInt(ketersediaan.jam_selesai_blokir.replace('.00', ''));
+
+                if (dateStr < startDate) return false;
+                if (dateStr === startDate && currentTime < startTime) return false;
+
+                if (dateStr > endDate) return false;
+                if (dateStr === endDate && currentTime > endTime) return false;
+
+                return true;
             }
             return false;
         });
     };
 
-    const [selectedCells, setSelectedCells] = useState<{ unitId: string, time: string }[]>([]);
+    const [selectedCells, setSelectedCells] = useState<{ unitId: string; time: string }[]>([]);
+    const [pricingTypes, setPricingTypes] = useState<{ [key: string]: 'booking' | 'promo' }>({});
     const [dialogOpen, setDialogOpen] = useState(false);
     const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [bookingDetailsData, setBookingDetailsData] = useState<BookingDetail[]>([]);
 
-    // Reset selectedCells when selectedDate changes
     useEffect(() => {
         setSelectedCells([]);
+        setPricingTypes({});
+        setBookingDetailsData([]);
     }, [selectedDate]);
 
     const bookingSchema = z.object({
@@ -163,12 +215,15 @@ function DaftarBooking() {
         try {
             const tanggal_main = format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z';
             const tanggal_transaksi = format(new Date(), 'yyyy-MM-dd') + 'T00:00:00.000Z';
-            const booking_details = selectedCells.map(cell => {
+            const booking_details = bookingDetailsData.length > 0 ? bookingDetailsData : selectedCells.map(cell => {
                 const unit = units?.find(u => u.id === cell.unitId);
+                const cellKey = `${cell.unitId}-${cell.time}`;
+                const pricingType = pricingTypes[cellKey] || 'booking';
+                const price = pricingType === 'promo' ? 0 : (unit?.harga || 0);
                 return {
                     unit_id: cell.unitId,
                     jam_main: cell.time,
-                    harga: unit?.harga || 0,
+                    harga: price,
                     tanggal: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
                 };
             });
@@ -197,8 +252,11 @@ function DaftarBooking() {
             toast.success('Booking berhasil dibuat!');
             setSubmitStatus('success');
             setSelectedCells([]);
-            setDialogOpen(false);
+            setPricingTypes({});
+            setBookingDetailsData([]);
             form.reset();
+            setPhoneDisplay('');
+            setDialogOpen(false);
         } catch (err: unknown) {
             setSubmitStatus('error');
             if (err instanceof Error) {
@@ -367,12 +425,17 @@ function DaftarBooking() {
                                                                         (cell) => cell.unitId === unit.id && cell.time === time
                                                                     );
                                                                     if (exists) {
-                                                                        // Remove from selection
+                                                                        // Remove from pricing types when deselecting
+                                                                        const cellKey = `${unit.id}-${time}`;
+                                                                        setPricingTypes(prevPricing => {
+                                                                            const newPricing = { ...prevPricing };
+                                                                            delete newPricing[cellKey];
+                                                                            return newPricing;
+                                                                        });
                                                                         return prev.filter(
                                                                             (cell) => !(cell.unitId === unit.id && cell.time === time)
                                                                         );
                                                                     } else {
-                                                                        // Add to selection
                                                                         return [...prev, { unitId: unit.id, time }];
                                                                     }
                                                                 });
@@ -431,13 +494,23 @@ function DaftarBooking() {
                                     )}
                                 />
                                 <FormField
-                                    control={form.control}
-                                    name="noHp"
-                                    render={({ field }) => (
-                                        <FormItem className="">
+                                    control={form.control} name="noHp"
+                                    render={() => (
+                                        <FormItem>
                                             <FormLabel>No HP</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="No HP" {...field} inputMode="tel" />
+                                                <div className="relative">
+                                                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 pointer-events-none z-10 text-xs text-gray-600 ">
+                                                        +62
+                                                    </div>
+                                                    <Input
+                                                        placeholder="8xxx-xxxx-xxxx"
+                                                        value={phoneDisplay}
+                                                        onChange={(e) => handlePhoneChange(e.target.value)}
+                                                        className="pl-12"
+                                                        inputMode="tel"
+                                                    />
+                                                </div>
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -478,25 +551,85 @@ function DaftarBooking() {
                                         </FormItem>
                                     )}
                                 />
-                                <div className="mt-6 w-full overflow-x-auto">
-                                    <div className="text-sm font-medium mb-3 text-[#61368E]">Detail Unit yang Dipesan</div>
-                                    <BookingDetailsTable
-                                        columns={bookingDetailsColumns}
-                                        data={selectedCells.map((cell) => {
-                                            const unitObj = units?.find((u) => u.id === cell.unitId);
-                                            return {
-                                                id: cell.unitId + '-' + cell.time,
-                                                booking_id: '',
-                                                unit_id: cell.unitId,
-                                                jam_main: cell.time,
-                                                harga: unitObj?.harga || 0,
-                                                tanggal: selectedDate ? format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z' : '',
-                                                nama_unit: unitObj?.nama_unit || '',
-                                                status_booking_detail: '',
-                                            };
-                                        })}
-                                    />
-                                </div>
+                                {/* Selected Booking Details */}
+                                {selectedCells.length > 0 && (
+                                    <div>
+                                        <div className="rounded-md">
+                                            <Table>
+                                                <TableHeader className="bg-[#61368E]">
+                                                    <TableRow>
+                                                        <TableHead className="text-white text-center">No</TableHead>
+                                                        <TableHead className="text-white text-center">Unit</TableHead>
+                                                        <TableHead className="text-white text-center">Konsol</TableHead>
+                                                        <TableHead className="text-white text-center">Tanggal</TableHead>
+                                                        <TableHead className="text-white text-center">Waktu</TableHead>
+                                                        <TableHead className="text-white text-center">Tipe</TableHead>
+                                                        <TableHead className="text-white text-center">Harga</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody className="bg-white">
+                                                    {selectedCells.map((cell, index) => {
+                                                        const unit = units?.find(u => u.id === cell.unitId);
+                                                        const cellKey = `${cell.unitId}-${cell.time}`;
+                                                        const pricingType = pricingTypes[cellKey] || 'booking';
+                                                        const displayPrice = pricingType === 'promo' ? 0 : (unit?.harga || 0);
+                                                        return (
+                                                            <TableRow key={cellKey} className="text-[#61368E] font-medium">
+                                                                <TableCell className="text-center">{index + 1}</TableCell>
+                                                                <TableCell className="text-center">{unit?.nama_unit}</TableCell>
+                                                                <TableCell className="text-center">
+                                                                    <span className="text-[#61368E]">
+                                                                        {unit?.jenis_konsol}
+                                                                    </span>
+                                                                </TableCell>
+                                                                <TableCell className="text-center">
+                                                                    {selectedDate ? format(selectedDate, 'dd MMM yyyy') : ''}
+                                                                </TableCell>
+                                                                <TableCell className="text-center">{cell.time}</TableCell>
+                                                                <TableCell className="text-center">
+                                                                    <Select 
+                                                                        value={pricingType} 
+                                                                        onValueChange={(value: 'booking' | 'promo') => {
+                                                                            setPricingTypes(prev => ({
+                                                                                ...prev,
+                                                                                [cellKey]: value
+                                                                            }));
+                                                                        }}
+                                                                    >
+                                                                        <SelectTrigger className="w-24 h-8 text-xs">
+                                                                            <SelectValue />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            <SelectItem value="booking">Booking</SelectItem>
+                                                                            <SelectItem value="promo">Promo</SelectItem>
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </TableCell>
+                                                                <TableCell className="text-center font-semibold">
+                                                                    Rp {displayPrice.toLocaleString('id-ID')}
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })}
+                                                    <TableRow className="bg-[#F8F5F5] font-bold">
+                                                        <TableCell colSpan={6} className="text-center text-[#61368E]">
+                                                            Total Harga
+                                                        </TableCell>
+                                                        <TableCell className="text-center text-[#61368E] font-bold text-lg">
+                                                            Rp {selectedCells.reduce((total, cell) => {
+                                                                const unit = units?.find(u => u.id === cell.unitId);
+                                                                const cellKey = `${cell.unitId}-${cell.time}`;
+                                                                const pricingType = pricingTypes[cellKey] || 'booking';
+                                                                const price = pricingType === 'promo' ? 0 : (unit?.harga || 0);
+                                                                return total + price;
+                                                            }, 0).toLocaleString('id-ID')}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </div>
+                                )}
                                 {submitStatus === 'error' && (
                                     <div className="text-red-600 text-sm">{submitError}</div>
                                 )}

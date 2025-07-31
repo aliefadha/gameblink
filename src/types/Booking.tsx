@@ -1,12 +1,10 @@
 export interface BookingDetail {
     id: string;
-    booking_id: string;
+    booking_id?: string;
     unit_id: string;
     jam_main: string;
     harga: number;
     tanggal: string;
-    nama_unit: string;
-    status_booking_detail: string;
 }
 
 export interface Booking {
@@ -44,6 +42,7 @@ export interface CreateBookingRequest {
         jam_main: string;
         harga: number;
         tanggal: string;
+        booking_id?: string;
     }[];
 }
 

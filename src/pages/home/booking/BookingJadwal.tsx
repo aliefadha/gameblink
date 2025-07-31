@@ -82,16 +82,21 @@ function BookingJadwal() {
             const currentTime = parseInt(time.replace('.00', ''));
             const startTime = parseInt(ketersediaan.jam_mulai_blokir.replace('.00', ''));
 
-            if (dateStr < startDate) return false;
-
-            if (ketersediaan.status_perbaikan === "Pending") {
-                if (dateStr > startDate) return true;
-                if (dateStr === startDate && currentTime >= startTime) return true;
-                return false;
-            }
-
             if (ketersediaan.status_perbaikan === "Selesai") {
-                return false;
+                if (!ketersediaan.tanggal_selesai_blokir || !ketersediaan.jam_selesai_blokir) {
+                    return false;
+                }
+
+                const endDate = format(new Date(ketersediaan.tanggal_selesai_blokir), 'yyyy-MM-dd');
+                const endTime = parseInt(ketersediaan.jam_selesai_blokir.replace('.00', ''));
+
+                if (dateStr < startDate) return false;
+                if (dateStr === startDate && currentTime < startTime) return false;
+
+                if (dateStr > endDate) return false;
+                if (dateStr === endDate && currentTime > endTime) return false;
+
+                return true;
             }
             return false;
         });
@@ -157,8 +162,8 @@ function BookingJadwal() {
                                     <tr>
                                         <th className="text-xs font-bold text-[#2F2F2F] text-left p-2 w-[85px] sticky left-0 bg-white z-10 ">Jam</th>
                                         {units?.map((unit) => (
-                                            <th key={unit.id} className="text-center p-2 w-[150px]">
-                                                <div className="text-center text-xs">
+                                            <th key={unit.id} className="text-center p-2 w-[100px] md:w-[150px] sticky ">
+                                                <div className="text-center text-[10px] md:text-xs">
                                                     <div className="bg-[#61368E] rounded-t-md w-full py-2 text-white font-bold">
                                                         <p>{unit.nama_unit}</p>
                                                     </div>

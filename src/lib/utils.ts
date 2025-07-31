@@ -22,5 +22,5 @@ export function hasRole(user: User, roles: string[]) {
 }
 
 export function formatRupiah(amount: number): string {
-  return `Rp ${amount.toLocaleString('id-ID')}`;
+  return `${amount.toLocaleString('id-ID')}`;
 }

@@ -22,7 +22,6 @@ export const columns: ColumnDef<Ketersediaan>[] = [
     {
         accessorKey: "tanggal_mulai_blokir",
         header: "Tanggal Mulai Blokir",
-        size: 75,
         cell: ({ row }) => {
             const date = new Date(row.getValue("tanggal_mulai_blokir"))
             const day = date.getDate().toString().padStart(2, '0')
@@ -39,11 +38,10 @@ export const columns: ColumnDef<Ketersediaan>[] = [
     {
         accessorKey: "tanggal_selesai_blokir",
         header: "Tanggal Selesai Blokir",
-        size: 75,
         cell: ({ row }) => {
             const dateValue = row.getValue("tanggal_selesai_blokir")
             if (!dateValue) return "-"
-            
+
             const date = new Date(dateValue as string)
             const day = date.getDate().toString().padStart(2, '0')
             const month = (date.getMonth() + 1).toString().padStart(2, '0')
@@ -64,10 +62,6 @@ export const columns: ColumnDef<Ketersediaan>[] = [
     {
         accessorKey: "keterangan",
         header: "Keterangan",
-    },
-    {
-        accessorKey: "status_perbaikan",
-        header: "Status Perbaikan",
     },
     {
         id: "aksi",

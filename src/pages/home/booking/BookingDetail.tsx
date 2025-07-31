@@ -263,10 +263,10 @@ function BookingDetail() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
                       { value: 'bank_transfer', label: 'Transfer Bank', icon: '/images/payment-icons/bank-transfer.svg' },
-                      // { value: 'gopay', label: 'GoPay', icon: '/images/payment-icons/gopay.svg' },
+                      { value: 'gopay', label: 'GoPay', icon: '/images/payment-icons/gopay.svg' },
                       // { value: 'shopeepay', label: 'ShopeePay', icon: '/images/payment-icons/shopeepay.svg' },
                       // { value: 'dana', label: 'Dana', icon: '/images/payment-icons/dana.svg' },
-                      // { value: 'qris', label: 'QRIS', icon: '/images/payment-icons/qris.svg' }
+                      { value: 'other_qris', label: 'QRIS', icon: '/images/payment-icons/qris.svg' }
                     ].map((method) => (
                       <div
                         key={method.value}
