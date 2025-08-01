@@ -53,6 +53,26 @@ export const createUnit = async (unitData: UnitFormData): Promise<Unit> => {
     return result.data;
 };
 
+export const updateUnit = async (id: string, unitData: UnitFormData): Promise<Unit> => {
+    const fullUrl = `${API_BASE_URL}/unit/${id}`;
+
+    const response = await fetch(fullUrl, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(unitData),
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Gagal memperbarui unit');
+    }
+
+    const result: SingleApiResponse<Unit> = await response.json();
+    return result.data;
+};
+
 export const deleteUnit = async (id: string): Promise<void> => {
     const fullUrl = `${API_BASE_URL}/unit/${id}`;
 

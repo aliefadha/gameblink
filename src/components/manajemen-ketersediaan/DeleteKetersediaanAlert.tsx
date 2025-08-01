@@ -25,7 +25,7 @@ export function DeleteKetersediaanAlert({ ketersediaanId }: { ketersediaanId: st
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button variant="link" className="text-[#D31A1D]">
+                <Button variant="link" size="sm" className="text-[#D31A1D]">
                     Hapus
                 </Button>
             </AlertDialogTrigger>

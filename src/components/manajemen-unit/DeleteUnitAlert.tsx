@@ -21,7 +21,7 @@ export function DeleteUnitAlert({ unitId }: { unitId: string }) {
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button variant="link" className="text-[#D31A1D] text-center w-full">
+                <Button variant="link" size="sm" className="text-[#D31A1D] text-center ">
                     Hapus
                 </Button>
             </AlertDialogTrigger>

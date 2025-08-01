@@ -17,16 +17,21 @@ import {
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    onRefetch?: () => void
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    onRefetch,
 }: DataTableProps<TData, TValue>) {
     const table = useReactTable({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        meta: {
+            onRefetch,
+        },
     })
 
     return (

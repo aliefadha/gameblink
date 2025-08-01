@@ -67,7 +67,7 @@ export const columns: ColumnDef<Ketersediaan>[] = [
         id: "aksi",
         header: "Aksi",
         cell: ({ row }) => (
-            <div className="flex  items-center justify-start lg:justify-center flex-wrap">
+            <div className="flex items-center justify-start lg:justify-center flex-wrap">
                 <EditKetersediaanDialog ketersediaan={row.original} />
                 <DeleteKetersediaanAlert ketersediaanId={row.original.id_ketersediaan} />
             </div>

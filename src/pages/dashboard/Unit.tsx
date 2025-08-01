@@ -28,7 +28,7 @@ function Unit() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [cabang, setCabang] = useState<Cabang | null>(null);
 
-    const { data: units, isLoading, error: unitsError } = useQuery({
+    const { data: units, isLoading, error: unitsError, refetch } = useQuery({
         queryKey: ['units', cabang?.id],
         queryFn: async () => {
             if (!cabang?.id) return [];
@@ -109,7 +109,7 @@ function Unit() {
         if (!units || units.length === 0) {
             return <div className="text-center p-10">Tidak ada unit yang ditemukan untuk cabang ini.</div>;
         }
-        return <DataTable columns={columns} data={units} />;
+        return <DataTable columns={columns} data={units} onRefetch={refetch} />;
     };
 
     return (

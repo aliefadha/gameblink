@@ -1,7 +1,7 @@
 
-import type { Unit } from "@/types/Unit"
 import { type ColumnDef } from "@tanstack/react-table"
-import { DeleteUnitAlert } from "./DeleteUnitAlert"
+import type { Unit } from "@/types/Unit"
+import { AksiColumn } from "./AksiColumn"
 
 export const columns: ColumnDef<Unit>[] = [
     {
@@ -31,7 +31,7 @@ export const columns: ColumnDef<Unit>[] = [
         header: () => <div className="text-center">Aksi</div>,
         cell: ({ row }) => {
             return (
-                <DeleteUnitAlert unitId={row.original.id} />
+                <AksiColumn row={row} />
             )
         }
     }
