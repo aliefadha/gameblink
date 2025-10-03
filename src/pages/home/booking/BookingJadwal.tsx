@@ -48,7 +48,7 @@ function BookingJadwal() {
                 undefined, // type
                 cabangId // cabang parameter
             );
-            return allBookings.filter((b: import("@/types/Booking").Booking) => b.status_booking === 'Aktif');
+            return allBookings.filter((b: import("@/types/Booking").Booking) => (b.status_pembayaran === 'Berhasil' || b.status_pembayaran === 'Pending'));
         },
         enabled: !!cabangId && !!selectedDate
     });
@@ -82,7 +82,7 @@ function BookingJadwal() {
             const currentTime = parseInt(time.replace('.00', ''));
             const startTime = parseInt(ketersediaan.jam_mulai_blokir.replace('.00', ''));
 
-            if (ketersediaan.status_perbaikan === "Selesai") {
+            if (ketersediaan.status_perbaikan === "Selesai" || ketersediaan.status_perbaikan === "Pending") {
                 if (!ketersediaan.tanggal_selesai_blokir || !ketersediaan.jam_selesai_blokir) {
                     return false;
                 }

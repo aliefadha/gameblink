@@ -313,7 +313,7 @@ function DaftarBooking() {
                                 </div>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="center" className="w-fit z-10">
+                        <DropdownMenuContent align="center" className="w-full z-10">
                             <Calendar
                                 mode="single"
                                 defaultMonth={selectedDate}
@@ -391,7 +391,7 @@ function DaftarBooking() {
                                             <td className="text-xs font-bold text-[#2F2F2F] p-1 sticky left-0 bg-white z-10">{time}</td>
                                             {units?.map((unit) => {
                                                 const isBooked = (bookings ?? []).some((booking: import("@/types/Booking").Booking) =>
-                                                    booking.status_booking === "Aktif" &&
+                                                    (booking.status_pembayaran === "Berhasil" || booking.status_pembayaran === "Pending") &&
                                                     booking.booking_details?.some((detail: import("@/types/Booking").BookingDetail) =>
                                                         detail.unit_id === unit.id &&
                                                         detail.jam_main === time &&
@@ -587,8 +587,8 @@ function DaftarBooking() {
                                                                 </TableCell>
                                                                 <TableCell className="text-center">{cell.time}</TableCell>
                                                                 <TableCell className="text-center">
-                                                                    <Select 
-                                                                        value={pricingType} 
+                                                                    <Select
+                                                                        value={pricingType}
                                                                         onValueChange={(value: 'booking' | 'promo') => {
                                                                             setPricingTypes(prev => ({
                                                                                 ...prev,

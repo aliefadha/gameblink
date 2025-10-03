@@ -40,6 +40,7 @@ function BookingLayout() {
         document.body.appendChild(script);
     }, []);
 
+
     useEffect(() => {
         if (currentStep === 2 && !stepOne) {
             navigate('/booking');
