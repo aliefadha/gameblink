@@ -16,9 +16,13 @@ import { BiHomeAlt } from "react-icons/bi"
 import { MdKeyboardArrowDown } from "react-icons/md"
 import type { Cabang } from "@/types/Cabang"
 import { useDebounce } from "@/hooks/use-debounce"
+import { formatDateRange } from "@/lib/utils"
 
 function Booking() {
-    const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+    const [dateRange, setDateRange] = useState<{ from: Date | undefined; to?: Date }>({
+        from: new Date(),
+        to: new Date()
+    });
     const [bookingType, setBookingType] = useState<string>('all');
     const [cabang, setCabang] = useState<Cabang | null>(null);
     const [searchValue, setSearchValue] = useState<string>('');
@@ -27,8 +31,8 @@ function Booking() {
     const debouncedSearchValue = useDebounce(searchValue, 300);
 
     const { data: bookings, isLoading, refetch } = useQuery({
-        queryKey: ['bookings', selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined, bookingType, cabang, debouncedSearchValue],
-        queryFn: () => getBookings(selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined, bookingType === 'all' ? undefined : bookingType, cabang?.id, debouncedSearchValue || undefined, 1000),
+        queryKey: ['bookings', dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined, dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined, bookingType, cabang, debouncedSearchValue],
+        queryFn: () => getBookings(dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined, dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined, bookingType === 'all' ? undefined : bookingType, cabang?.id, debouncedSearchValue || undefined, 1000),
         staleTime: 30000, // 30 seconds
         gcTime: 300000, // 5 minutes
         refetchOnWindowFocus: false,
@@ -55,10 +59,12 @@ function Booking() {
         try {
             setIsExporting(true);
             const excelData = await exportBookings(
-                selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined,
+                dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined,
+                dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
                 bookingType === 'all' ? undefined : bookingType,
                 cabang?.id,
-                debouncedSearchValue || undefined
+                debouncedSearchValue || undefined,
+                'excel'
             );
 
             const blob = new Blob([excelData]);
@@ -135,18 +141,19 @@ function Booking() {
                             <Button variant="outline" className="w-full justify-between bg-transparent">
                                 <div className="flex items-center gap-x-2">
                                     <LuCalendarDays size={16} />
-                                    <span className="font-semibold truncate">
-                                        {selectedDate ? format(selectedDate, 'dd MMM yyyy') : 'Pilih Tanggal'}
+                                    <span className="font-semibold text-sm">
+                                        {formatDateRange(dateRange)}
                                     </span>
                                 </div>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start" className="w-fit z-10">
                             <Calendar
-                                mode="single"
-                                defaultMonth={selectedDate}
-                                selected={selectedDate}
-                                onSelect={date => setSelectedDate(date || undefined)}
+                                mode="range"
+                                defaultMonth={dateRange.from}
+                                selected={dateRange}
+                                onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })}
+                                numberOfMonths={2}
                                 className="rounded-lg border shadow-sm"
                             />
                         </DropdownMenuContent>

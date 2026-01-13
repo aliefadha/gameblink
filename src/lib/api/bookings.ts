@@ -5,12 +5,15 @@ import type { ApiResponse, PaginatedApiResponse } from "@/types/Api";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export const getBookings = async (date?: string, type?: string, cabang?: string, search?: string, limit?: number): Promise<Booking[]> => {
+export const getBookings = async (startDate?: string, endDate?: string, type?: string, cabang?: string, search?: string, limit?: number): Promise<Booking[]> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
 
-    if (date) {
-        params.append('tanggal_main', date);
+    if (startDate) {
+        params.append('startDate', startDate);
+    }
+    if (endDate) {
+        params.append('endDate', endDate);
     }
     if (type && type !== 'all') {
         params.append('type', type);
@@ -43,12 +46,15 @@ export const getBookings = async (date?: string, type?: string, cabang?: string,
     return apiResponse.data?.data || [];
 };
 
-export const getBookingsWithMeta = async (date?: string, type?: string): Promise<PaginatedApiResponse<Booking>> => {
+export const getBookingsWithMeta = async (startDate?: string, endDate?: string, type?: string): Promise<PaginatedApiResponse<Booking>> => {
     let fullUrl = `${API_BASE_URL}/booking`;
     const params = new URLSearchParams();
 
-    if (date) {
-        params.append('tanggal_main', date);
+    if (startDate) {
+        params.append('startDate', startDate);
+    }
+    if (endDate) {
+        params.append('endDate', endDate);
     }
     if (type && type !== 'all') {
         params.append('type', type);
@@ -223,13 +229,16 @@ export const updateBooking = async (bookingId: string, status_booking: string): 
 
 }
 
-export const exportBookings = async (date?: string, type?: string, cabang?: string, search?: string, format: 'excel' | 'csv' = 'excel'): Promise<ArrayBuffer> => {
+export const exportBookings = async (startDate?: string, endDate?: string, type?: string, cabang?: string, search?: string, format: 'excel' | 'csv' = 'excel'): Promise<ArrayBuffer> => {
     const token = getToken();
     let fullUrl = `${API_BASE_URL}/booking/export`;
     const params = new URLSearchParams();
 
-    if (date) {
-        params.append('tanggal_main', date);
+    if (startDate) {
+        params.append('startDate', startDate);
+    }
+    if (endDate) {
+        params.append('endDate', endDate);
     }
     if (type && type !== 'all') {
         params.append('type', type);
