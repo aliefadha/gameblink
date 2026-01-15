@@ -32,7 +32,7 @@ function Booking() {
 
     const { data: bookings, isLoading, refetch } = useQuery({
         queryKey: ['bookings', dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined, dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined, bookingType, cabang, debouncedSearchValue],
-        queryFn: () => getBookings(dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined, dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined, bookingType === 'all' ? undefined : bookingType, cabang?.id, debouncedSearchValue || undefined, 1000),
+        queryFn: () => getBookings(dateRange.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined, dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined, bookingType === 'all' ? undefined : bookingType, cabang?.id, debouncedSearchValue || undefined),
         staleTime: 30000, // 30 seconds
         gcTime: 300000, // 5 minutes
         refetchOnWindowFocus: false,
@@ -64,7 +64,7 @@ function Booking() {
                 bookingType === 'all' ? undefined : bookingType,
                 cabang?.id,
                 debouncedSearchValue || undefined,
-                'excel'
+                'csv'
             );
 
             const blob = new Blob([excelData]);
