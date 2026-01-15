@@ -45,6 +45,7 @@ function BookingJadwal() {
             if (!cabangId || !selectedDate) return [];
             const allBookings = await getBookings(
                 format(selectedDate, 'yyyy-MM-dd'),
+                format(selectedDate, 'yyyy-MM-dd'),
                 undefined, // type
                 cabangId // cabang parameter
             );

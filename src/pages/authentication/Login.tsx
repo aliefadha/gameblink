@@ -74,7 +74,7 @@ function Login() {
                                     <FormItem>
                                         <FormLabel>Kata Sandi</FormLabel>
                                         <FormControl>
-                                            <Input type="password" placeholder="At least 8 characters" {...field} />
+                                            <Input type="password" placeholder="At least 6 characters" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
