@@ -123,6 +123,7 @@ function DaftarBooking() {
             if (!cabang?.id || !selectedDate) return [];
             return await getBookings(
                 format(selectedDate, 'yyyy-MM-dd'),
+                format(selectedDate, 'yyyy-MM-dd'),
                 undefined, // type
                 cabang.id // cabang parameter
             );
