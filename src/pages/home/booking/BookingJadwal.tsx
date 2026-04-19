@@ -19,15 +19,23 @@ import {
 
 import { useNavigate } from "react-router";
 import type { Ketersediaan } from "@/types/Ketersediaan";
+import type { Booking } from "@/types/Booking";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 function BookingJadwal() {
   const { stepTwo, setData } = useFormStore();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSlots, setSelectedSlots] = useState<{ unitId: string; nama_unit: string; jenis_konsol: string; jam: string, harga: number, tanggal: string }[]>([]);
+  const [isValidating, setIsValidating] = useState(false);
   const cabangId = stepTwo?.id_cabang;
   const { data: units, isLoading, error: unitsError } = useQuery({
     queryKey: ["units", cabangId],
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       if (!cabangId) return [];
       return await getUnitsByCabang(cabangId);
@@ -41,6 +49,10 @@ function BookingJadwal() {
       cabangId,
       selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
     ],
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       if (!cabangId || !selectedDate) return [];
       const allBookings = await getBookings(
@@ -59,6 +71,10 @@ function BookingJadwal() {
       'ketersediaans',
       selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
     ],
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
+    refetchInterval: 10_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       try {
         return await getKetersediaans();
@@ -71,11 +87,11 @@ function BookingJadwal() {
     },
   });
 
-  const isUnitBlocked = (unitName: string, time: string, date: Date): boolean => {
-    if (!ketersediaans) return false;
+  const isUnitBlocked = (unitName: string, time: string, date: Date, ketersediaanData: Ketersediaan[] | null | undefined, cabangName: string | undefined): boolean => {
+    if (!ketersediaanData) return false;
     const dateStr = format(date, 'yyyy-MM-dd');
-    return ketersediaans.some((ketersediaan: Ketersediaan) => {
-      if (ketersediaan.nama_unit !== unitName || ketersediaan.nama_cabang !== stepTwo?.nama_cabang) {
+    return ketersediaanData.some((ketersediaan: Ketersediaan) => {
+      if (ketersediaan.nama_unit !== unitName || ketersediaan.nama_cabang !== cabangName) {
         return false;
       }
 
@@ -205,7 +221,7 @@ function BookingJadwal() {
                           )
                         );
 
-                        const isBlocked = isUnitBlocked(unit.nama_unit, time, selectedDate);
+                        const isBlocked = isUnitBlocked(unit.nama_unit, time, selectedDate, ketersediaans, stepTwo?.nama_cabang);
 
                         let buttonClass = "bg-[#F8F5F5] hover:bg-gray-200";
                         let isDisabled = false;
@@ -281,31 +297,110 @@ function BookingJadwal() {
             </div>
           </DrawerTrigger>
           <button
-            className={`w-full text-white font-bold text-lg py-3 focus:outline-none ${selectedSlots.length === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00A651]'}`}
-            onClick={() => {
-              if (selectedSlots.length === 0) return;
-              setData({
-                step: 3,
-                data: {
-                  tanggal_main: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
-                  total_harga: totalHarga,
-                  booking_detail: selectedSlots.map(slot => ({
-                    unit_id: slot.unitId,
-                    jam_main: slot.jam,
-                    harga: slot.harga,
-                    nama_unit: slot.nama_unit,
-                    jenis_konsol: slot.jenis_konsol,
-                    tanggal: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
-                  })),
-                  booking_type: 'Online',
-                  metode_pembayaran: ''
+            className={`w-full text-white font-bold text-lg py-3 focus:outline-none ${selectedSlots.length === 0 || isValidating ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#00A651]'}`}
+            onClick={async () => {
+              if (selectedSlots.length === 0 || isValidating) return;
+              setIsValidating(true);
+
+              try {
+                const [freshBookings, freshKetersediaans] = await Promise.all([
+                  getBookings(
+                    format(selectedDate, 'yyyy-MM-dd'),
+                    format(selectedDate, 'yyyy-MM-dd'),
+                    undefined,
+                    cabangId
+                  ).then((allBookings: Booking[]) =>
+                    allBookings.filter((b: Booking) => b.status_pembayaran === 'Berhasil' || b.status_pembayaran === 'Pending')
+                  ),
+                  getKetersediaans().catch((error: unknown) => {
+                    if (error instanceof Error && error.message.includes("Status: 404")) return [];
+                    throw error;
+                  }),
+                ]);
+
+                await Promise.all([
+                  queryClient.invalidateQueries({ queryKey: ['bookings', cabangId, format(selectedDate, 'yyyy-MM-dd')] }),
+                  queryClient.invalidateQueries({ queryKey: ['ketersediaans', format(selectedDate, 'yyyy-MM-dd')] }),
+                ]);
+
+                const validSlots: typeof selectedSlots = [];
+                const invalidSlots: typeof selectedSlots = [];
+
+                selectedSlots.forEach(slot => {
+                  const unit = units?.find(u => u.id === slot.unitId);
+                  if (!unit) {
+                    invalidSlots.push(slot);
+                    return;
+                  }
+
+                  const booked = freshBookings.some((booking: Booking) =>
+                    booking.booking_details?.some((detail: import("@/types/Booking").BookingDetail) =>
+                      detail.unit_id === slot.unitId &&
+                      detail.jam_main === slot.jam &&
+                      new Date(detail.tanggal).toDateString() === selectedDate.toDateString()
+                    )
+                  );
+                  if (booked) {
+                    invalidSlots.push(slot);
+                    return;
+                  }
+
+                  const blocked = isUnitBlocked(slot.nama_unit, slot.jam, selectedDate, freshKetersediaans, stepTwo?.nama_cabang);
+                  if (blocked) {
+                    invalidSlots.push(slot);
+                    return;
+                  }
+
+                  validSlots.push(slot);
+                });
+
+                const formatSlotList = (slots: typeof selectedSlots) => {
+                  const labels = slots.map(s => `${s.nama_unit} jam ${s.jam}`);
+                  if (labels.length <= 3) return labels.join(', ');
+                  return labels.slice(0, 3).join(', ') + ` dan ${labels.length - 3} lainnya`;
+                };
+
+                if (validSlots.length === 0) {
+                  toast.error(`${formatSlotList(invalidSlots)} sudah tidak tersedia, silakan pilih ulang`);
+                  setSelectedSlots([]);
+                  return;
                 }
-              });
-              navigate('/booking/details');
+
+                if (invalidSlots.length > 0) {
+                  toast.warning(`${formatSlotList(invalidSlots)} sudah tidak tersedia dan dihapus dari pilihan`);
+                  setSelectedSlots(validSlots);
+                }
+
+                const validTotal = validSlots.reduce((sum, s) => sum + (s.harga || 0), 0);
+
+                setData({
+                  step: 3,
+                  data: {
+                    tanggal_main: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
+                    total_harga: validTotal,
+                    booking_detail: validSlots.map(slot => ({
+                      unit_id: slot.unitId,
+                      jam_main: slot.jam,
+                      harga: slot.harga,
+                      nama_unit: slot.nama_unit,
+                      jenis_konsol: slot.jenis_konsol,
+                      tanggal: format(selectedDate, 'yyyy-MM-dd') + 'T00:00:00.000Z',
+                    })),
+                    booking_type: 'Online',
+                    metode_pembayaran: ''
+                  }
+                });
+                navigate('/booking/details');
+              } catch (error) {
+                toast.error('Gagal memverifikasi ketersediaan, silakan coba lagi');
+                console.error('Validation error:', error);
+              } finally {
+                setIsValidating(false);
+              }
             }}
-            disabled={selectedSlots.length === 0}
+            disabled={selectedSlots.length === 0 || isValidating}
           >
-            LANJUT
+            {isValidating ? 'Memverifikasi...' : 'LANJUT'}
           </button>
         </div>
         <DrawerContent>

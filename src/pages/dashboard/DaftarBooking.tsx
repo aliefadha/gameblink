@@ -35,6 +35,9 @@ function DaftarBooking() {
 
     const { data: cabangs, isLoading: isLoadingCabang, error: cabangsError } = useQuery({
         queryKey: ['cabangs'],
+        staleTime: 5 * 60 * 1000,
+        refetchInterval: 10_000,
+        refetchIntervalInBackground: false,
         queryFn: async () => {
             try {
                 return await getCabangs();
@@ -97,6 +100,9 @@ function DaftarBooking() {
 
     const { data: units, isLoading, error: unitsError } = useQuery({
         queryKey: ['units', cabang?.id, selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined],
+        staleTime: 2 * 60 * 1000,
+        refetchInterval: 10_000,
+        refetchIntervalInBackground: false,
         queryFn: async () => {
             if (!cabang?.id) return [];
             try {
@@ -119,6 +125,10 @@ function DaftarBooking() {
             cabang?.id,
             selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
         ],
+        staleTime: 0,
+        gcTime: 5 * 60 * 1000,
+        refetchInterval: 10_000,
+        refetchIntervalInBackground: false,
         queryFn: async () => {
             if (!cabang?.id || !selectedDate) return [];
             return await getBookings(
@@ -136,6 +146,10 @@ function DaftarBooking() {
             'ketersediaans',
             selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined
         ],
+        staleTime: 0,
+        gcTime: 5 * 60 * 1000,
+        refetchInterval: 10_000,
+        refetchIntervalInBackground: false,
         queryFn: async () => {
             try {
                 return await getKetersediaans();
